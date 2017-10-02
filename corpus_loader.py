@@ -24,7 +24,7 @@ def main():
     in_corpus_file = open(in_corpus_filename, "r")
 
     # TODO handle the way to split the pased sentence file
-    sentences = in_corpus_file.readlines()
+    sentence_generator = in_corpus_file
 
     # Create outfiles for each type of corrupted sentence
     outfiles = {}
