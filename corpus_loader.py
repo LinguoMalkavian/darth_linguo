@@ -10,7 +10,7 @@ def main():
     corruptors = {}
     corruptors["subjectRM"] = transformer.SubjectRemover("subjectRM")
     corruptors["verbRM"] = transformer.VerbRemover("verbRM")
-    corruptors["verbInfl"] = transformer.VerbalInflCorruptor("verbInfl")
+    corruptors["verbInfl"] = transformer.VerbInflCorruptor("verbInfl")
     corruptors["adjInfl"] = transformer.AdjInflCorruptor("adjInfl")
     # Initialize counters for corrupted sentences
     corruptCount = {}
