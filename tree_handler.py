@@ -6,6 +6,7 @@ import re
 # a regular expresion that matches the shape of terminal nodes
 terminalshape = re.compile("\(([a-z0]{1,8}) ([A-Za-záéíóúñÑÁÉÍÓÚ]+)\)")
 labelshape = re.compile("\(([a-z0-9.]+|ROOT)")
+adj_TAG = "aq00"
 
 
 # Generator function to process input text
@@ -106,7 +107,9 @@ class Sentence_obj:
     # Regexes to be used
     lead_regex = re.compile("Sentence #(\d+) \((\d+) tokens\):")
     item_regex = re.compile(
-    "\[Text=([A-Za-záéíóúñÑÁÉÍÓÚ0-9]+|[\",.;:]) CharacterOffsetBegin=\d+ CharacterOffsetEnd=\d+ PartOfSpeech=([a-z0]{1,8}) NamedEntityTag=\w+\]")
+                            "\[Text=([A-Za-záéíóúñÑÁÉÍÓÚ0-9]+|[\",.;:])\
+                             CharacterOffsetBegin=\d+ CharacterOffsetEnd=\d+ \
+                             PartOfSpeech=([a-z0]{1,8}) NamedEntityTag=\w+\]")
 
     # Takes a structured string and stores the necesary stuff
     def __init__(self, sentence_str):

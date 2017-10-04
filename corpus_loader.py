@@ -11,7 +11,7 @@ def main():
     corruptors["subjectRM"] = transformer.SubjectRemover("subjectRM")
     corruptors["verbRM"] = transformer.VerbRemover("verbRM")
     corruptors["verbInfl"] = transformer.VerbalInflCorruptor("verbInfl")
-    corruptors["adjInfl"] = transformer.AdjectivalInflCorruptor("adjInfl")
+    corruptors["adjInfl"] = transformer.AdjInflCorruptor("adjInfl")
     # Initialize counters for corrupted sentences
     corruptCount = {}
     uncorrupted_count = 0
@@ -24,7 +24,7 @@ def main():
     in_corpus_file = open(in_corpus_filename, "r")
 
     # TODO handle the way to split the pased sentence file
-    sentence_generator = in_corpus_file
+    sentence_generator = tree_handler.sentence_obj_generator(in_corpus_file)
 
     # Create outfiles for each type of corrupted sentence
     outfiles = {}
@@ -33,32 +33,37 @@ def main():
         outfiles[kind] = open(outname, "w")
 
     # Iterate parsed sentences and test for coruptibility
-    for parsed_sentence in sentences:
-        sentence_tree = tree_handler.loadTree(parsed_sentence)
-        postrans = []
+    for parsed_sentence in sentence_generator:
+        posib_trans = []
         # Test for each corruptor
         for corr in corruptortypes:
-            possibility = corruptors[corr].test_possible(sentence_tree)
+            possibility = corruptors[corr].test_possible(parsed_sentence)
             if possibility:
-                postrans.append(corr)
+                posib_trans.append(corr)
 
         # Choose corruptor that has the fewest sentences so far
         select = None
         selectCount = int("inf")
-        for possib in postrans:
+        for possib in posib_trans:
             if corruptCount[possib] < selectCount:
                 select = possib
                 selectCount = corruptCount[possib]
 
         if select:
             # Corrupt sentence
-            corruptedVersion = corruptors[select].transform(sentence_tree)
+            corruptedVersion = corruptors[select].transform(parsed_sentence)
             # Save corrupted sentence to corresponding file
             outfiles[select].write(corruptedVersion + "\n")
             corruptCount[select] += 1
         else:
             uncorrupted_count += 1
-    # TODO Print summary to console
+    # Print summary to console
+    total = 0
+    for trans_type in corruptCount:
+        print(trans_type + ":" + corruptCount[trans_type])
+        total += corruptCount[trans_type]
+    print("Total:" + total)
+    print("Incorruptible:" + uncorrupted_count)
 
 
 main()
