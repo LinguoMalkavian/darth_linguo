@@ -20,7 +20,7 @@ def main():
 
     # Load parsed sentences
     in_corpus_filename = sys.argv[1]
-    out_corpus_folder = in_corpus_filename + "/"
+    out_corpus_folder = "corrupted/"
     in_corpus_file = open(in_corpus_filename, "r")
 
     # TODO handle the way to split the pased sentence file
@@ -43,7 +43,7 @@ def main():
 
         # Choose corruptor that has the fewest sentences so far
         select = None
-        selectCount = int("inf")
+        selectCount = float("inf")
         for possib in posib_trans:
             if corruptCount[possib] < selectCount:
                 select = possib
@@ -52,18 +52,21 @@ def main():
         if select:
             # Corrupt sentence
             corruptedVersion = corruptors[select].transform(parsed_sentence)
-            # Save corrupted sentence to corresponding file
-            outfiles[select].write(corruptedVersion + "\n")
-            corruptCount[select] += 1
+            if corruptedVersion != -1:
+                # Save corrupted sentence to corresponding file
+                outfiles[select].write(corruptedVersion)
+                corruptCount[select] += 1
+            else:
+                uncorrupted_count += 1
         else:
             uncorrupted_count += 1
     # Print summary to console
     total = 0
     for trans_type in corruptCount:
-        print(trans_type + ":" + corruptCount[trans_type])
+        print(trans_type + ":" + str(corruptCount[trans_type]))
         total += corruptCount[trans_type]
-    print("Total:" + total)
-    print("Incorruptible:" + uncorrupted_count)
+    print("Total: {0}".format(total))
+    print("Incorruptible: {0}".format(uncorrupted_count))
 
 
 main()

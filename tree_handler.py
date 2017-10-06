@@ -6,7 +6,7 @@ import re
 # a regular expresion that matches the shape of terminal nodes
 terminalshape = re.compile("\(([a-z0]{1,8}) ([A-Za-záéíóúñÑÁÉÍÓÚ]+)\)")
 labelshape = re.compile("\(([a-z0-9.]+|ROOT)")
-adj_TAG = "aq00"
+adj_TAG = "aq0000"
 
 
 # Generator function to process input text
@@ -28,9 +28,9 @@ def sentence_obj_generator(in_file):
         yield sentence_obj
 
 
+# Broken TODO fix it damn it
 def loadTree(treeString):
     "Takes string representation of a tree and returns it as a syntactic tree"
-
     # base case, string is the representation of a terminal
     terminalMatch = terminalshape.match(treeString.strip())
     if terminalMatch:
@@ -53,7 +53,9 @@ def loadTree(treeString):
             elif char == ")":
                 parencount = parencount - 1
                 if parencount == 0:
-                    daughters.append(loadTree(treeString[lastind:ind+1]))
+                    daughter_string = treeString[lastind:ind+1]
+                    print("Handing Down:\n" + daughter_string)
+                    daughters.append(loadTree(daughter_string))
                     lastind = ind+1
         newNode = Node(kind, daughters)
         newNode.consolidateText()
@@ -107,9 +109,11 @@ class Sentence_obj:
     # Regexes to be used
     lead_regex = re.compile("Sentence #(\d+) \((\d+) tokens\):")
     item_regex = re.compile(
-                            "\[Text=([A-Za-záéíóúñÑÁÉÍÓÚ0-9]+|[\",.;:])\
-                             CharacterOffsetBegin=\d+ CharacterOffsetEnd=\d+ \
-                             PartOfSpeech=([a-z0]{1,8}) NamedEntityTag=\w+\]")
+                            "\[Text=([A-Za-záéíóúñÑÁÉÍÓÚ0-9]+|[\",.;:])" +
+                            " CharacterOffsetBegin=(\d+)" +
+                            " CharacterOffsetEnd=(\d+)" +
+                            " PartOfSpeech=([a-z0]{1,8})+"
+                            " NamedEntityTag=(\w+)\]")
 
     # Takes a structured string and stores the necesary stuff
     def __init__(self, sentence_str):
@@ -129,14 +133,10 @@ class Sentence_obj:
         this_match = Sentence_obj.item_regex.match(line)
         while this_match is not None:
             token_text = this_match.group(1)
-            token_beg = this_match.group(2)
-            token_end = this_match.group(3)
             token_pos = this_match.group(4)
             token_NET = this_match.group(5)
             new_token = Token(
                              token_text,
-                             token_beg,
-                             token_end,
                              token_pos,
                              token_NET,
             )
@@ -146,7 +146,8 @@ class Sentence_obj:
         # [Text=Str1 CharacterOffsetBegin=x CharacterOffsetEnd=y
         # PartfSpeech=POS NamedEntityTag=NET]
         remaining = "\n".join(lines)
-        self.tree = loadTree(remaining.strip())
+        # This will be fixed after TODO rmove the comment when it is
+        # self.tree = loadTree(remaining.strip())
 
         # Tree representation, starts with the fist line to not match  regex
         # Hand to loadTree
@@ -154,9 +155,7 @@ class Sentence_obj:
 
 class Token:
 
-    def __init__(self, text, beg, end, pos, NET):
+    def __init__(self, text, pos, NET):
         self.text = text
-        self.beg = beg
-        self.end = end
         self.pos = pos
         self.NET = NET
