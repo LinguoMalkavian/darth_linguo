@@ -15,6 +15,8 @@ for line in verb_file.readlines():
     verb_list.append(line.strip())
 
 # Constants to keep tags organized
+pos_adj = "ADJ"
+pos_verb = "VERB"
 mood_indicative = "Ind"
 tense_present = "Pres"
 tense_imperfect = "Imp"
@@ -79,11 +81,13 @@ class VerbInflCorruptor(corruptor):
     def test_possible(self, sentence):
         for token in sentence:
             features = extract_token_features(token)
-            if features["Pos"] == "VERB" and features["VerbForm"] == 'Fin':
+            if features["Pos"] == pos_verb and features["VerbForm"] == 'Fin':
                 return True
         return False
 
     def transform(self, sentence):
+        # TODO deal with possible correct sentences when 1st and 3rd are
+        # interchanged (look at the subject?)
         possib = []
         for token in sentence:
             # Assemble the appropriate replacements
@@ -155,13 +159,13 @@ class VerbInflCorruptor(corruptor):
 
 # Adjectival inflection corruption
 class AdjInflCorruptor(corruptor):
-    adj_TAG = "aq0000"
+
     inf_ADJ_regex = re.compile("([A-Za-záéíóúñÑÁÉÍÓÚ]+)(a|o|as|os|es)$")
 
     def test_possible(self, sentence):
-        token_list = sentence.tokens
-        for token in token_list:
-            if token.pos == AdjInflCorruptor.adj_TAG:
+        for token in sentence:
+            features = extract_token_features(token)
+            if features["Pos"] == pos_adj:
                 if AdjInflCorruptor.inf_ADJ_regex.match(token.text):
                     return True
         return False
@@ -169,9 +173,9 @@ class AdjInflCorruptor(corruptor):
     def transform(self, sentence):
         # List to store all codified possible transforms
         possib = []
-        token_list = sentence.tokens
-        for token in token_list:
-            if token.pos == tree_handler.adj_TAG:
+        for token in sentence:
+            features = extract_token_features(token)
+            if features["Pos"] == pos_adj:
                 match = AdjInflCorruptor.inf_ADJ_regex.match(token.text)
                 if match:
                     root = match.group(1)
