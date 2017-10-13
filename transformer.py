@@ -1,5 +1,6 @@
-import tree_handler
+import spacy
 import re
+from collections import defaultdict
 import random
 
 # Load the dictionary
@@ -12,6 +13,12 @@ verb_list = []
 verb_file = open("verbos-espanol-conjugaciones.txt")
 for line in verb_file.readlines():
     verb_list.append(line.strip())
+
+# Constants to keep tags organized
+mood_indicative = "Ind"
+tense_present = "Pres"
+tense_imperfect = "Imp"
+tense_past = "Past"
 
 
 class corruptor ():
@@ -51,41 +58,41 @@ class VerbInflCorruptor(corruptor):
     # Version with all main verbs
     # main_verb_tag = re.compile("vm[is][cfips]000")
     # Version with only the three most common tenses
-    main_verb_tag = re.compile("vm[i][ips]000")
 
     root_str = "([A-Za-záéíóúñÑÁÉÍÓÚ]+)"
 
     # Morphological model of the present indicative
-    pres_ind_tag = "vmip000"
+
     pres_infl = "(o|es|és|ás|e|emos|éis|en|as|a|amos|áis|an|imos|ís)$"
     verb_pr_ind_regex = re.compile(root_str + pres_infl)
 
     # Morphological model of regular past imprefect of the indicative
-    imp_ind_tag = "vmii000"
+
     imperf_infl = "((aba|ía)(|s|mos|is|n))$"
     verb_imp_ind_regex = re.compile(root_str + imperf_infl)
 
     # Morphological model of regular simple past of the indicative
-    perf_ind_tag = "vmis000"
+
     perf_infl = "(é|aste|ó|amos|asteis|aron|í|iste|ió|imos|isteis|ieron)$"
     verb_ps_ind_regex = re.compile(root_str + perf_infl)
 
     def test_possible(self, sentence):
-        token_list = sentence.tokens
-        for token in token_list:
-            if VerbInflCorruptor.main_verb_tag.match(token.pos):
+        for token in sentence:
+            features = extract_token_features(token)
+            if features["Pos"] == "VERB" and features["VerbForm"] == 'Fin':
                 return True
         return False
 
     def transform(self, sentence):
-        token_list = sentence.tokens
         possib = []
-        for token in token_list:
+        for token in sentence:
             # Assemble the appropriate replacements
             # Verb is in present indicative
             pos_inf = []
+            token_info = extract_token_features(token)
             infl = ""
-            if token.pos == VerbInflCorruptor.pres_ind_tag:
+            if token_info["Mood"] == mood_indicative \
+                    and token_info["Tense"] == tense_present:
                 pos_inf = ["o", "es", "és", "ás", "e", "emos", "éis", "en",
                            "as", "a", "amos", "áis", "an", "imos", "ís"]
                 v_match = VerbInflCorruptor.verb_pr_ind_regex.match(token.text)
@@ -101,7 +108,8 @@ class VerbInflCorruptor(corruptor):
                             if inf[0] == "a" or inf[0] == "á":
                                 pos_inf.remove(inf)
             # Verb is in imperfect indicative
-            elif token.pos == VerbInflCorruptor.imp_ind_tag:
+            elif token_info["Mood"] == mood_indicative\
+                    and token_info["Tense"] == tense_imperfect:
                 v_match = VerbInflCorruptor.verb_imp_ind_regex.match(
                                                                    token.text)
                 if v_match:
@@ -182,3 +190,15 @@ class AdjInflCorruptor(corruptor):
             return newText
         else:
             return -1
+
+
+def extract_token_features(token):
+    feat_dict = defaultdict(str)
+    feat_dict["Pos"] = token.pos_
+    pos_string = token.tag_.split("__")[1]
+    pair_strs = pos_string.split("|")
+    for pair_str in pair_strs:
+        pair = pair_str.split("=")
+        if len(pair) == 2:
+            feat_dict[pair[0]] = pair[1]
+    return feat_dict
