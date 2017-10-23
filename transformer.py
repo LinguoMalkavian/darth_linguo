@@ -236,7 +236,10 @@ class AdjInflCorruptor(corruptor):
 def extract_token_features(token):
     feat_dict = defaultdict(str)
     feat_dict["POS"] = token.pos_
-    pos_string = token.tag_.split("__")[1]
+    try:
+        pos_string = token.tag_.split("__")[1]
+    except:
+        return feat_dict
     pair_strs = pos_string.split("|")
     for pair_str in pair_strs:
         pair = pair_str.split("=")

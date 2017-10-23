@@ -1,14 +1,17 @@
-import tree_handler
+import spacy
 import transformer
 import sys
 
 
 def main():
-
+    # Load the model
+    print("Loading Spacy Spanish model")
+    nlp_mod = spacy.load("es")
+    print("Model loaded")
     # Initialize the array of corruptors
-    corruptortypes = ["subjectRM", "verbRM", "verbInfl", "adjInfl"]
+    corruptortypes = ["prepRM", "verbRM", "verbInfl", "adjInfl"]
     corruptors = {}
-    corruptors["subjectRM"] = transformer.SubjectRemover("subjectRM")
+    corruptors["prepRM"] = transformer.PrepRemover("prepRM")
     corruptors["verbRM"] = transformer.VerbRemover("verbRM")
     corruptors["verbInfl"] = transformer.VerbInflCorruptor("verbInfl")
     corruptors["adjInfl"] = transformer.AdjInflCorruptor("adjInfl")
@@ -18,13 +21,11 @@ def main():
     for typ in corruptortypes:
         corruptCount[typ] = 0
 
-    # Load parsed sentences
+    # Load sentence generator
     in_corpus_filename = sys.argv[1]
     out_corpus_folder = "corrupted/"
     in_corpus_file = open(in_corpus_filename, "r")
-
-    # TODO handle the way to split the pased sentence file
-    sentence_generator = tree_handler.sentence_obj_generator(in_corpus_file)
+    sentence_gen = sentence_generator(in_corpus_file, nlp_mod)
 
     # Create outfiles for each type of corrupted sentence
     outfiles = {}
@@ -32,8 +33,10 @@ def main():
         outname = out_corpus_folder + "corrupted_by." + kind
         outfiles[kind] = open(outname, "w")
 
+    processed_count = 0
     # Iterate parsed sentences and test for coruptibility
-    for parsed_sentence in sentence_generator:
+    print("Begining Corruption")
+    for parsed_sentence in sentence_gen:
         posib_trans = []
         # Test for each corruptor
         for corr in corruptortypes:
@@ -60,6 +63,13 @@ def main():
                 uncorrupted_count += 1
         else:
             uncorrupted_count += 1
+        processed_count += 1
+        # Progress checker, for sanity
+        if processed_count % 500 == 0:
+            print("{} sentences processed".format(processed_count))
+    # Close files
+    for out_file in outfiles:
+        out_file.close()
     # Print summary to console
     total = 0
     for trans_type in corruptCount:
@@ -67,6 +77,14 @@ def main():
         total += corruptCount[trans_type]
     print("Total: {0}".format(total))
     print("Incorruptible: {0}".format(uncorrupted_count))
+
+
+def sentence_generator(in_file, nlp_mod):
+    nextline = in_file.readline()
+    while nextline:
+        sentence_obj = nlp_mod(nextline)
+        yield sentence_obj
+        nextline = in_file.readline()
 
 
 main()
