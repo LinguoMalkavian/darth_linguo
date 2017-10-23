@@ -199,7 +199,7 @@ class AdjInflCorruptor(corruptor):
         possib = []
         for token in sentence:
             features = extract_token_features(token)
-            if features["Pos"] == pos_adj:
+            if features["POS"] == pos_adj:
                 match = AdjInflCorruptor.inf_ADJ_regex.match(token.text)
                 if match:
                     root = match.group(1)
