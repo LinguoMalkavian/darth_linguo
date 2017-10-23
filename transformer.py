@@ -1,4 +1,4 @@
-import spacy
+from spacy import symbols
 import re
 from collections import defaultdict
 import random
@@ -17,10 +17,12 @@ for line in verb_file.readlines():
 # Constants to keep tags organized
 pos_adj = "ADJ"
 pos_verb = "VERB"
+dep_root = "ROOT"
 mood_indicative = "Ind"
 tense_present = "Pres"
 tense_imperfect = "Imp"
 tense_past = "Past"
+finite_verb = "Fin"
 
 
 class corruptor ():
@@ -44,15 +46,37 @@ class SubjectRemover(corruptor):
     def transform(self, sentence_tree):
         pass
 
+
 # Verb Remover
-
-
+# Removes the main verb in a sentence
 class VerbRemover(corruptor):
+    # This transformation will only be attempted in sentences with verbal roots
     def test_possible(self, sentence):
-        pass
+        for token in sentence:
+            token_features = extract_token_features(token)
+            if self.is_main_conjugated_verb(token, token_features):
+                return True
+        return False
+    # This method takes the sentence, removes the main verb and returns it
+    # Input sentence must be a spacy sentence with dependency parsing
 
     def transform(self, sentence):
-        pass
+        for token in sentence:
+            token_features = extract_token_features(token)
+            if self.is_main_conjugated_verb(token, token_features):
+                main_verb = token.text
+                main_verb_reg = re.compile("( ?)"+main_verb)
+                newtext = main_verb_reg.sub("", sentence.text)
+                newtext = newtext[0].capitalize() + newtext[1:]
+                return newtext
+        return -1
+
+    def is_main_conjugated_verb(self, token, features):
+        if token.dep_ == dep_root \
+          and features["POS"] == pos_verb \
+          and features["VerbForm"] == finite_verb:
+            return True
+        return False
 
 
 # Verbal inflection corruption
@@ -81,7 +105,7 @@ class VerbInflCorruptor(corruptor):
     def test_possible(self, sentence):
         for token in sentence:
             features = extract_token_features(token)
-            if features["Pos"] == pos_verb and features["VerbForm"] == 'Fin':
+            if features["POS"] == pos_verb and features["VerbForm"] == 'Fin':
                 return True
         return False
 
@@ -198,7 +222,7 @@ class AdjInflCorruptor(corruptor):
 
 def extract_token_features(token):
     feat_dict = defaultdict(str)
-    feat_dict["Pos"] = token.pos_
+    feat_dict["POS"] = token.pos_
     pos_string = token.tag_.split("__")[1]
     pair_strs = pos_string.split("|")
     for pair_str in pair_strs:
