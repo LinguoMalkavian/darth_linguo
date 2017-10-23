@@ -17,6 +17,7 @@ for line in verb_file.readlines():
 # Constants to keep tags organized
 pos_adj = "ADJ"
 pos_verb = "VERB"
+pos_prep = "Prep"
 dep_root = "ROOT"
 mood_indicative = "Ind"
 tense_present = "Pres"
@@ -39,12 +40,24 @@ class corruptor ():
 # Subject Remover
 
 
-class SubjectRemover(corruptor):
-    def test_possible(self, sentence_tree):
-        pass
+class PrepRemover(corruptor):
+    def test_possible(self, sentence):
+        for token in sentence:
+            token_features = extract_token_features(token)
+            if token_features["AdpType"] == pos_prep:
+                return True
+        return False
 
-    def transform(self, sentence_tree):
-        pass
+    def transform(self, sentence):
+        for token in sentence:
+            token_features = extract_token_features(token)
+            if token_features["AdpType"] == pos_prep:
+                prepo = token.text
+                prepo_reg = re.compile("( ?)"+prepo)
+                newtext = prepo_reg.sub("", sentence.text)
+                newtext = newtext[0].capitalize() + newtext[1:]
+                return newtext
+        return -1
 
 
 # Verb Remover
@@ -189,7 +202,7 @@ class AdjInflCorruptor(corruptor):
     def test_possible(self, sentence):
         for token in sentence:
             features = extract_token_features(token)
-            if features["Pos"] == pos_adj:
+            if features["POS"] == pos_adj:
                 if AdjInflCorruptor.inf_ADJ_regex.match(token.text):
                     return True
         return False
