@@ -6,7 +6,7 @@ import sys
 def main():
     # Load the model
     print("Loading Spacy Spanish model")
-    nlp_mod = spacy.load("es")
+    nlp_mod = spacy.load('es_core_news_sm')
     print("Model loaded")
     # Initialize the array of corruptors
     corruptortypes = ["prepRM", "verbRM", "verbInfl", "adjInfl"]
@@ -23,7 +23,7 @@ def main():
 
     # Load sentence generator
     in_corpus_filename = sys.argv[1]
-    out_corpus_folder = "corrupted/"
+    out_corpus_folder = in_corpus_filename + "."
     in_corpus_file = open(in_corpus_filename, "r")
     sentence_gen = sentence_generator(in_corpus_file, nlp_mod)
 
@@ -68,8 +68,8 @@ def main():
         if processed_count % 500 == 0:
             print("{} sentences processed".format(processed_count))
     # Close files
-    for out_file in outfiles:
-        out_file.close()
+    for kind in outfiles:
+        outfiles[kind].close()
     # Print summary to console
     total = 0
     for trans_type in corruptCount:
