@@ -1,0 +1,6 @@
+# System files
+__pycache__/
+.ipynb_checkpoints/
+#Data and corpus (to avoid big file shenanigans)
+Corpora/
+Data/
