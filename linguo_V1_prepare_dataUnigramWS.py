@@ -6,6 +6,8 @@ from nltk import word_tokenize
 import numpy as np
 from collections import defaultdict
 from string import capwords
+import csv
+
 
 def main():
     # Handles importing data
@@ -37,8 +39,8 @@ def main():
     total = 0.0
     for sentence in parsed_real_train:
         for token in sentence:
-            if token.text != ".":
-                counts[token.text.lower()] += 1
+            if token != ".":
+                counts[token.lower()] += 1
                 total += 1
 
     # TODO: implement a version where low frequency words are replaced by pos
@@ -76,13 +78,17 @@ def main():
                                                        tokenized_real_test))]
 
     # Consolidate training data
-    labeled_sentences_train = [[sentence, 1] for sentence in tokenized_real_train]
-    labeled_sentences_train += [[sentence, 0] for sentence in word_salads_train]
+    labeled_sentences_train = [[sentence, 1]
+                               for sentence in tokenized_real_train]
+    labeled_sentences_train += [[sentence, 0]
+                                for sentence in word_salads_train]
     random.shuffle(labeled_sentences_train)
 
     # Consolidate test data
-    labeled_sentences_test = [[sentence, 1] for sentence in tokenized_real_test]
-    labeled_sentences_test += [[sentence, 0] for sentence in word_salads_test]
+    labeled_sentences_test = [[sentence, 1]
+                              for sentence in tokenized_real_test]
+    labeled_sentences_test += [[sentence, 0]
+                               for sentence in word_salads_test]
     random.shuffle(labeled_sentences_test)
 
     # Define the vocabulary and word ids
@@ -91,6 +97,9 @@ def main():
     for word in vocabulary:
         word_to_ix[word] = len(word_to_ix)
 
+    # Save the dictionary
+    word_to_ix_fn = "Data/" + corpus_name + ".VSUnigram.dict"
+    save_dict(word_to_ix, word_to_ix_fn)
     # Saving the Corpus
     training_corpus_fn = "Data/" + corpus_name + ".VSUnigram.labeled.training"
     testing_corpus_fn = "Data/" + corpus_name + ".VSUnigram.labeled.testing"
@@ -101,7 +110,7 @@ def main():
     print("You now have {} train instances and {} test instancess:".format(
         len(labeled_sentences_train), len(labeled_sentences_test)))
 
-# END OF THE UNREVISED Code
+# End main
 
 
 def token_replacement(tokenized_sentences, hapaxes):
@@ -112,10 +121,10 @@ def token_replacement(tokenized_sentences, hapaxes):
     for sentence in tokenized_sentences:
         this_sentence = []
         for token in sentence:
-            if token.text.lower() in hapaxes:
+            if token.lower() in hapaxes:
                 this_sentence.append("#unk")
             else:
-                this_sentence.append(token.text)
+                this_sentence.append(token)
         processed.append(this_sentence)
     return processed
 
@@ -128,6 +137,14 @@ def save_corpus(data, filename):
         out = words + "|" + label + "\n"
         out_file.write(out)
     out_file.close()
+
+
+def save_dict(data, filename):
+    outfile = open(filename, "w")
+    for word in data:
+        line = "{w}\:{id}\n".format(w=word, id=data[word])
+        outfile.write(line)
+    outfile.close()
 
 
 # Method that reads in a corpus file and filters out interogatives and
@@ -169,7 +186,7 @@ def generateWS(vocab, probdist, avg_length, sd):
     if length < 6:
         length = 6
     # Draw the words
-    draw = np.choice(vocab, length, probdist).tolist()
+    draw = np.random.choice(vocab, length, probdist).tolist()
     # Assemble the sentence
     # Capitalize the first word in the sentence
     sentence = [capwords(draw.pop(0))]
@@ -188,7 +205,10 @@ def generateWS(vocab, probdist, avg_length, sd):
                 draw.insert(random.randint(0, len(draw)), closing)
             except IndexError:
                 break
-        elif next_word not in [")", "»"]:
+        else:
             sentence.append(next_word)
     sentence.append(".")
     return sentence
+
+
+main()
