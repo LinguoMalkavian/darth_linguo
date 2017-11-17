@@ -1,6 +1,6 @@
 import tree_handler
 
-testString="""(ROOT
+testString = """(ROOT
   (sentence
     (sn
       (grup.nom (pd000000 Esta)))
@@ -17,6 +17,6 @@ testString="""(ROOT
             (spec (da0000 el))
             (grup.nom (nc0s000 ejemplo))))))
     (fp .)))"""
-sampleTree= tree_handler.loadTree(testString)
+sampleTree = tree_handler.loadTree(testString)
 
 print(sampleTree.consolidateText())
