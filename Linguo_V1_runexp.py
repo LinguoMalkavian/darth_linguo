@@ -6,90 +6,188 @@ import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-# spacy model
-import spacy
 
 # other utilities
-import numpy as np
-from numpy.random import choice
 import random
-from collections import defaultdict
-import math
-from string import capwords
+import sys
+import re
 
 
-
-# Standard pytorch imports
 def main():
-    # load Spacy spanish model to handle tokenization of toy data
-    nlp = spacy.load('es_core_news_sm')
-# In[49]:
+    config_fn = "Data/" + sys.argv[1]
+    # Load the config file
+    corpus_path, experiments = load_config(config_fn)
+    exp_tag = ".results." + config_fn.split(".")[-1]
+
+    # Define filenames
+    training_corpus_fn = corpus_path + ".labeled.training"
+    testing_corpus_fn = corpus_path + ".labeled.testing"
+    dict_fn = corpus_path + ".dict"
+    results_fn = corpus_path + exp_tag
+
+    # Load data
+    training_instances = load_corpus(training_corpus_fn)
+    test_instances = load_corpus(testing_corpus_fn)
+    word_to_ix = load_dict(dict_fn)
+
+    # Confirmation message
+    print(
+          '''Done loading data, you now have:
+    {} train instances
+    {} test instances:'''
+          .format(len(training_instances),
+                  len(test_instances)))
+
+    # Open results file
+    result_file = open(results_fn, "w")
+    results = []
+    header = '''-------------------------------------------------------
+    This file includes results for experiments performed using
+    model: Linguo_V1
+    on the data: {corpus}
+    with the configurations in {config}
+    --------------------------------------------------------------------
+    '''.format(corpus=corpus_path,
+               config=config_fn)
+    result_file.write(header)
+
+    # Experiment loop
+    ne = 1
+    for exp_parameters in experiments:
+        print("Experiment{num_exp}:".format(num_exp=ne))
+        model, final_loss = train_model(exp_parameters,
+                                        training_instances,
+                                        word_to_ix)
+        res = test_model(model, test_instances, word_to_ix)
+        res["final_loss"] = final_loss
+        results.append(res)
+        save_summary(result_file, exp_parameters, res)
+        ne += 1
+    result_file.close()
+# End of main
 
 
+def train_model(exp_parameters,
+                training_instances,
+                word_to_ix):
+    embed_dim = exp_parameters["embed_dim"]
+    lstm_dim = exp_parameters["lstm_dim"]
+    voc_size = len(word_to_ix)
+    hidden_dim = exp_parameters["hidden_dim"]
+    epochs = exp_parameters["epochs"]
+    learning_rate = exp_parameters["learning_rate"]
+    linguo = Linguo(embed_dim, voc_size, lstm_dim, hidden_dim)
+    optimizer = optim.SGD(linguo.parameters(), lr=learning_rate)
+    loss_function = nn.NLLLoss()
+    # Training time! Cue Eye of the Tiger
+    for i in range(epochs):
+        epoch_loss = 0
+        random.shuffle(training_instances)
+        for data, label in training_instances:
+            # Restart gradient
+            linguo.zero_grad()
 
-# In[45]:
+            # Run model
+            in_sentence = prepare_input(word_to_ix, data)
+            target = autograd.Variable(torch.LongTensor([label]))
+            prediction = linguo(in_sentence)
 
+            loss = loss_function(prediction, target)
 
-# Alternatively load an existing corpus
-
-if loaded _corpus == False:
-    #Put your corpus filename here
-    input_corpus_filename = "mini.toy"
-
-    training_corpus_fn = "Data/" + input_corpus_filename + ".labeled.training"
-    testing_corpus_fn = "Data/" + input_corpus_filename + ".labeled.testing"
-
-    def load_corpus(filename):
-        in_file = open(filename,"r")
-        labeled_data = []
-        for line in in_file.readlines():
-            words_str , label = line.rstrip().split("|")
-            words_list = words_str.split(" ")
-            instance = [words_list, int(label)]
-            labeled_data.append(instance)
-        return labeled_data
-
-    labeled_sentences_train1 = load_corpus(training_corpus_fn)
-    labeled_sentences_test1 = load_corpus(testing_corpus_fn)
-
-    print("Done, you now have {} train instances and {} test instancess:".format(len(labeled_sentences_train),len(labeled_sentences_test)))
-
-
-# In[46]:
-
-
-
-
-
-# In[50]:
+            loss.backward()
+            optimizer.step()
+            # for parameter in linguo.parameters():
+            #   parameter.data.sub_(parameter.grad.data*learning_rate)
+            epoch_loss += loss.data[0]
+        print("{}:{}".format(i, epoch_loss))
+    return linguo, epoch_loss
 
 
-# Now we define the Neural network
+def test_model(model, test_instances, word_to_ix):
+    correct = 0
+    results = {"fp": 0, "fn": 0, "tp": 0, "tn": 0}
+    for testcase in test_instances:
+        prepared_inputs = prepare_input(word_to_ix, testcase[0])
+        tru_label = testcase[1]
+        prediction_vec = model(prepared_inputs).view(2)
+        # The system makes a forced choice, it choses the class with higher
+        # probability (introduce confidence??)
+        if prediction_vec.data[0] > prediction_vec.data[1]:
+            prediction = 0
+        else:
+            prediction = 1
+        # Tally the results
+        if prediction == 1 and tru_label == 1:
+            results["tp"] += 1
+            correct += 1
+        elif prediction == 0 and tru_label == 0:
+            results["tn"] += 1
+            correct += 1
+        elif prediction == 0 and tru_label == 1:
+            results["fn"] += 1
+        else:
+            results["fp"] += 1
+    results["accuracy"] = correct/len(test_instances)
+    return results
+
+
+def save_summary(outfile, experiments, results):
+    # Table with setting
+
+    outtable = """"-----------------------------------------------------
+Parameters:
+-----------------
+Embedding dimension: {embed}
+LSTM dimension: {lstm}
+Hidden Dimension: {hidden}
+Number of Epochs: {epochs}
+Results:
+--------
+Final loss:{loss}
+True Positives:{tp}
+True Negatives:{tn}
+False Positives:{fp}
+False Negatives:{fn}
+Accuracy:{accuracy}
+
+    """.format(embed=experiments["embed_dim"],
+               lstm=experiments["lstm_dim"],
+               hidden=experiments["hidden_dim"],
+               epochs=experiments["epochs"],
+               loss=results["final_loss"],
+               accuracy=results["accuracy"],
+               tp=results["tp"],
+               tn=results["tn"],
+               fp=results["fp"],
+               fn=results["fn"],)
+    print(outtable)
+    outfile.write(outtable)
 
 
 class Linguo(nn.Module):
-    def __init__(self,embedding_dim, vocab_size, lstm_dim , hidden_dim):
-        super(Linguo,self).__init__()
+    def __init__(self, embedding_dim, vocab_size, lstm_dim, hidden_dim):
+        super(Linguo, self).__init__()
         # Store the hidden layer dimension
         self.hidden_dim = hidden_dim
         # Define word embeddings
         self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
         # Define LSTM
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
-        #Define hidden linear layer
+        # Define hidden linear layer
         self.hidden2dec = nn.Linear(hidden_dim, 2)
-        #Define the hidden state
+        # Define the hidden state
         self.hstate = self.init_hstate()
 
     def forward(self, inputsentence):
-        linguo.hstate = linguo.init_hstate()
+        self.hstate = self.init_hstate()
         embeds = self.word_embeddings(inputsentence)
-        lstm_out, self.hstate = self.lstm(embeds.view(len(inputsentence),1, -1), self.hstate)
+        lstm_out, self.hstate = self.lstm(
+                                          embeds.view(len(inputsentence),
+                                                      1, -1),
+                                          self.hstate)
         decision_lin = self.hidden2dec(lstm_out[-1])
-        #print(decision_lin)
         decision_fin = F.log_softmax(decision_lin)
         return decision_fin
-
 
     def init_hstate(self):
         var1 = autograd.Variable(torch.zeros(1, 1, self.hidden_dim))
@@ -109,150 +207,69 @@ def prepare_input(word_to_ix, sentence):
     return autograd.Variable(tensor)
 
 
-
-# In[51]:
-
-
-# Training time! Cue Eye of the Tiger
-embed_dim = 32
-lstm_dim = 64
-voc_size = len(word_to_ix)
-hidden_dim = 64
-epochs = 25
-linguo = Linguo(embed_dim, voc_size, lstm_dim, hidden_dim)
-optimizer = optim.SGD(linguo.parameters(),lr=0.1)
-loss_function = nn.NLLLoss()
-learning_rate=0.1
-
-for i in range(epochs):
-    epoch_loss = 0
-    random.shuffle(labeled_sentences_train)
-    for data, label in labeled_sentences_train:
-        # Restart gradient
-        linguo.zero_grad()
-
-
-        # Run model
-        in_sentence = prepare_input(word_to_ix,data)
-        target = autograd.Variable(torch.LongTensor([label]))
-        prediction = linguo(in_sentence)
-        #Calculate loss and backpropagate
-
-        #Squared Loss
-        #loss = torch.pow(target-prediction.view(1),2)
-        loss = loss_function(prediction,target)
-
-        loss.backward()
-        optimizer.step()
-        #for parameter in linguo.parameters():
-        #   parameter.data.sub_(parameter.grad.data*learning_rate)
-        epoch_loss += loss.data[0]
-    print("{}:{}".format(i,epoch_loss))
-
-
-
-# In[52]:
-
-
-correct = 0
-salads =[]
-for testcase in labeled_sentences_test:
-    prepared_inputs = prepare_input(word_to_ix, testcase[0] )
-    prediction_vec = linguo(prepared_inputs).view(2)
-    if prediction_vec.data[0] > prediction_vec.data[1]:
-        prediction = 0
+# Loads a file with the confuguration, check example config file
+def load_config(config_path):
+    int_parameters = ["embed_dim",
+                      "lstm_dim",
+                      "hidden_dim",
+                      "epochs"]
+    float_parameters = ["learning_rate"]
+    config_file = open(config_path, "r")
+    line = config_file.readline()
+    while line.strip() == "" or line[0] == "#":
+        line = config_file.readline()
+    par, value = re.split(r" *= *", line.strip())
+    if par != "corpus_name":
+        message = "Error in config file, corpus_name parameter not defined "
+        terminate(message)
     else:
-        prediction = 1
-    if prediction == testcase[1]:
-        correct += 1
+        corpus_name = "Data/" + value
 
-#Summary:
-outtable ="""Corpus: {corpus}
-Embedding dimension: {embed}
-LSTM dimension: {lstm}
-Hidden Dimension: {hidden}
-Number of Epochs: {epoch}
-Final loss:{loss}""".format(
-                            corpus = input_corpus_filename,
-                            embed= embed_dim,
-                            lstm= lstm_dim,
-                            hidden= hidden_dim,
-                            epoch= epochs,
-                            loss= epoch_loss)
-print (outtable)
-print("Accuracy: {}".format(correct/len(labeled_sentences_test)))
-
-
-# | Corpus    |Corpus Size | Embed | LSTM | Hidden | Epochs | Loss   |Accuracy |
-# |:----------|:----------:|:-----:|:----:|:------:|:------:|:------:|:-------:|
-# |euro.mini  | 1514/380   | 32    | 32   | 64     |   50   | 0.034  | 0.98    |
-# |euro.toy   | 29730/7434 | 32    | 64   | 64     |   25   | 0.06   | 0.99    |
-#
-
-# In[53]:
+    # Load for each experiment
+    experiments = []
+    currentExp = {}
+    for line in config_file.readlines():
+        if line.strip() != "" and line[0] != "#":
+            if line.strip() == "/END":
+                experiments.append(currentExp)
+                currentExp = {}
+            else:
+                par, value = re.split(r" *= *", line.strip())
+                if par in int_parameters:
+                    currentExp[par] = int(value)
+                elif par in float_parameters:
+                    currentExp[par] = float(value)
+    config_file.close()
+    return corpus_name, experiments
 
 
-correct = 0
-salads =[]
-for testcase in labeled_sentences_test:
-    prepared_inputs = prepare_input(word_to_ix, testcase[0] )
-    prediction_vec = linguo(prepared_inputs).view(2)
-    if prediction_vec.data[0] > prediction_vec.data[1]:
-        prediction = 0
-    else:
-        prediction = 1
-    if prediction == testcase[1]:
-        correct += 1
-
-#Summary:
-outtable ="""Corpus: {corpus}
-Embedding dimension: {embed}
-LSTM dimension: {lstm}
-Hidden Dimension: {hidden}
-Number of Epochs: {epoch}
-Final loss:{loss}""".format(
-                            corpus = input_corpus_filename,
-                            embed= embed_dim,
-                            lstm= lstm_dim,
-                            hidden= hidden_dim,
-                            epoch= epochs,
-                            loss= epoch_loss)
-print (outtable)
-print("Accuracy: {}".format(correct/len(labeled_sentences_test)))
+# Loads from file the dictionary with the word ids
+def load_dict(filename):
+    infile = open(filename, "r")
+    dictionary = {}
+    for line in infile.readlines():
+        line = line.strip()
+        key, value = line.split("\:")
+        dictionary[key] = int(value)
+    infile.close()
+    return dictionary
 
 
-# In[ ]:
+def load_corpus(filename):
+    in_file = open(filename, "r")
+    labeled_data = []
+    for line in in_file.readlines():
+        words_str, label = line.rstrip().split("|")
+        words_list = words_str.split(" ")
+        instance = [words_list, int(label)]
+        labeled_data.append(instance)
+    return labeled_data
 
 
-#Reminder for the summary
+def terminate(message):
+    print("Program has encountered and error and must close")
+    print(message)
+    sys.exit()
 
 
-# In[ ]:
-
-
-# Saving the model
-modelfilename= "Models/{corpus}.{embed}emb.{lstm}lstm.{hidden}hid.{epoch}ep.model".format(
-                            corpus = input_corpus_filename,
-                            embed= embed_dim,
-                            lstm= lstm_dim,
-                            hidden= hidden_dim,
-                            epoch= epochs)
-torch.save(linguo.state_dict(), modelfilename)
-
-
-# In[16]:
-
-
-# Section reserver to save the data
-
-
-
-
-
-# In[10]:
-
-
-examplefile = open("example","w")
-
-
-# In[11]:
+main()
