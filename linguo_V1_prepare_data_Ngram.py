@@ -7,6 +7,7 @@ import numpy as np
 from collections import defaultdict
 from string import capwords
 
+
 def main():
     # Handles importing data
     # Manual seed for consistency
