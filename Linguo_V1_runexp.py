@@ -76,6 +76,7 @@ def train_model(exp_parameters,
     hidden_dim = exp_parameters["hidden_dim"]
     epochs = exp_parameters["epochs"]
     learning_rate = exp_parameters["learning_rate"]
+    batch_size = exp_parameters["batch_size"]
     linguo = Linguo(embed_dim, voc_size, lstm_dim, hidden_dim)
     optimizer = optim.SGD(linguo.parameters(), lr=learning_rate)
     loss_function = nn.NLLLoss()
@@ -83,6 +84,15 @@ def train_model(exp_parameters,
     for i in range(epochs):
         epoch_loss = 0
         random.shuffle(training_instances)
+        fresh_instances = training_instances[:]
+        # Get batches ready
+        num_batches = math.floor(len(training_instances)/batch_size)
+        batches = []
+        for i in range(num_batches):
+            batch_data = []
+            batch_labels = []
+            for j in range(batch_size):
+                batch_data.append(prepare_input(word_to_ix, data))
         for data, label in training_instances:
             # Restart gradient
             linguo.zero_grad()
@@ -141,6 +151,7 @@ Embedding dimension: {embed}
 LSTM dimension: {lstm}
 Hidden Dimension: {hidden}
 Number of Epochs: {epochs}
+Batch Size: {batch_size}
 Results:
 --------
 Final loss:{loss}
@@ -154,6 +165,7 @@ Accuracy:{accuracy}
                lstm=experiments["lstm_dim"],
                hidden=experiments["hidden_dim"],
                epochs=experiments["epochs"],
+               batch_size=experiments["batch_size"],
                loss=results["final_loss"],
                accuracy=results["accuracy"],
                tp=results["tp"],
@@ -212,7 +224,8 @@ def load_config(config_path):
     int_parameters = ["embed_dim",
                       "lstm_dim",
                       "hidden_dim",
-                      "epochs"]
+                      "epochs",
+                      "batch_size"]
     float_parameters = ["learning_rate"]
     config_file = open(config_path, "r")
     line = config_file.readline()
