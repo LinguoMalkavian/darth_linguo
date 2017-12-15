@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -q production
+#PBS -N LV110fold
+#PBS -l select=1:ncpus=1:ngpus=1
+#PBS -l place=free
+#PBS -V
+
+# change to the working directory
+cd $PBS_O_WORKDIR
+cd darth_linguo
+
+echo ">>>> Begin Linguo V1 With Cross Validation"
+
+python Linguo_V1crossVfull.py
