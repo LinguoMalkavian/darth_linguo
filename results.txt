@@ -1,0 +1,26 @@
+
+euro.toy
+defaultdict(<class 'float'>, {'accuracy': 0.9957492601560398, 'precision': 0.9965798160142414, 'recall': 0.9949152542372881, 'fmeasure': 0.9957457272609809, 'tp': 3698.1, 'tn': 3704.3, 'fp': 12.7, 'fn': 18.9, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.9516007532956687, 'precision': 0.9566398848267003, 'recall': 0.9462200699488834, 'fmeasure': 0.9513473039247813, 'tp': 3517.1, 'tn': 3557.1, 'fp': 159.9, 'fn': 199.9, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.9225181598062953, 'precision': 0.9109827582572076, 'recall': 0.9412429378531073, 'fmeasure': 0.9252116626676278, 'tp': 3498.6, 'tn': 3359.4, 'fp': 357.6, 'fn': 218.4, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.9169357008340059, 'precision': 0.885119203506787, 'recall': 0.9754102771051925, 'fmeasure': 0.9251560994567443, 'tp': 3625.6, 'tn': 3190.9, 'fp': 526.1, 'fn': 91.4, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.8890503093892924, 'precision': 0.8493077172986654, 'recall': 0.953241861716438, 'fmeasure': 0.8972297709899906, 'tp': 3543.2, 'tn': 3066.0, 'fp': 651.0, 'fn': 173.8, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.9013451708366962, 'precision': 0.8608655354446538, 'recall': 0.9643529728275493, 'fmeasure': 0.9085286590255983, 'tp': 3584.5, 'tn': 3116.1, 'fp': 600.9, 'fn': 132.5, 'order=n': 0.0})
+
+
+euro.mini
+defaultdict(<class 'float'>, {'accuracy': 0.983157894736842, 'precision': 0.9793622556097915, 'recall': 0.9873684210526316, 'fmeasure': 0.9832592139919807, 'tp': 187.6, 'tn': 186.0, 'fp': 4.0, 'fn': 2.4, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.8400000000000001, 'precision': 0.8456821605553942, 'recall': 0.8368421052631578, 'fmeasure': 0.8393926298655515, 'tp': 159.0, 'tn': 160.2, 'fp': 29.8, 'fn': 31.0, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.7607894736842106, 'precision': 0.7248576837847437, 'recall': 0.8452631578947368, 'fmeasure': 0.7793739624570074, 'tp': 160.6, 'tn': 128.5, 'fp': 61.5, 'fn': 29.4, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.7744736842105263, 'precision': 0.7816286132978829, 'recall': 0.7636842105263157, 'fmeasure': 0.7711189320333695, 'tp': 145.1, 'tn': 149.2, 'fp': 40.8, 'fn': 44.9, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.7971052631578949, 'precision': 0.7849548117489888, 'recall': 0.8194736842105262, 'fmeasure': 0.8003562075169295, 'tp': 155.7, 'tn': 147.2, 'fp': 42.8, 'fn': 34.3, 'order=n': 0.0})
+defaultdict(<class 'float'>, {'accuracy': 0.853157894736842, 'precision': 0.8282807177786333, 'recall': 0.8942105263157893, 'fmeasure': 0.8586682150417919, 'tp': 169.9, 'tn': 154.3, 'fp': 35.7, 'fn': 20.1, 'order=n': 0.0})
+
+euro.5000
+defaultdict(<class 'float'>, {'accuracy': 0.9914163090128755, 'precision': 0.9943987387390767, 'recall': 0.9884120171673821, 'fmeasure': 0.9913894519878197, 'tp': 921.2, 'tn': 926.8, 'fp': 5.2, 'fn': 10.8, 'order': 1})
+defaultdict(<class 'float'>, {'accuracy': 0.8821888412017168, 'precision': 0.8953035632263917, 'recall': 0.8791845493562231, 'fmeasure': 0.8824306547108929, 'tp': 819.4, 'tn': 825.0, 'fp': 107.0, 'fn': 112.6, 'order': 2})
+defaultdict(<class 'float'>, {'accuracy': 0.799892703862661, 'precision': 0.7621311878458226, 'recall': 0.8740343347639484, 'fmeasure': 0.813434158588158, 'tp': 814.6, 'tn': 676.4, 'fp': 255.6, 'fn': 117.4, 'order': 3})
+defaultdict(<class 'float'>, {'accuracy': 0.8107296137339055, 'precision': 0.7714914931639048, 'recall': 0.8856223175965665, 'fmeasure': 0.8214922971356688, 'tp': 825.4, 'tn': 685.8, 'fp': 246.2, 'fn': 106.6, 'order': 4})
+defaultdict(<class 'float'>, {'accuracy': 0.9231759656652361, 'precision': 0.9019204204053018, 'recall': 0.9590128755364807, 'fmeasure': 0.9281572115522175, 'tp': 893.8, 'tn': 827.0, 'fp': 105.0, 'fn': 38.2, 'order': 5})
+defaultdict(<class 'float'>, {'accuracy': 0.8536480686695279, 'precision': 0.8667712606841983, 'recall': 0.8373390557939914, 'fmeasure': 0.8232741038833471, 'tp': 780.4, 'tn': 810.8, 'fp': 121.2, 'fn': 151.6, 'order': 6})
+The whole process on gpu took1 hours, 22 minutes and 44 seconds

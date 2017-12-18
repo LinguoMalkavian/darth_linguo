@@ -1,0 +1,483 @@
+>>>> Begin Linguo V1 With Cross Validation on euro.toy with gpu
+Full corpus has 18582 sentences,
+    	 1418 were dumped,
+    among which 853 interogatives or exclamatives
+Your corpus has 18582 grammatical sentences
+Word salad data has been generated for order 7
+	18582 word salads generated in 3318.483 seconds
+Starting training on fold 1 for 7-grams...
+	 Epoch0:10987.081122249365
+	 Epoch1:8600.584889441729
+	 Epoch2:7952.038668572903
+	 Epoch3:7405.93452629447
+	 Epoch4:6834.917109459639
+Training finished in 983.3978 seconds.
+                Starting testing...
+...
+Testing finished in 20.871758460998535 seconds
+\Accuracy is 0.883104654291095
+Starting training on fold 2 for 7-grams...
+	 Epoch0:11487.74815645814
+	 Epoch1:8788.59166124463
+	 Epoch2:7971.546516984701
+	 Epoch3:7508.487978190184
+	 Epoch4:6936.156558215618
+Training finished in 898.8663 seconds.
+                Starting testing...
+...
+Testing finished in 19.600512742996216 seconds
+\Accuracy is 0.8905030938929244
+Starting training on fold 3 for 7-grams...
+	 Epoch0:11447.397574722767
+	 Epoch1:8862.534716188908
+	 Epoch2:8075.761237502098
+	 Epoch3:7521.625224977732
+	 Epoch4:6944.155764758587
+Training finished in 896.6930 seconds.
+                Starting testing...
+...
+Testing finished in 19.54147720336914 seconds
+\Accuracy is 0.8890234059725585
+Starting training on fold 4 for 7-grams...
+	 Epoch0:11090.616139024496
+	 Epoch1:8794.495997875929
+	 Epoch2:8032.5011077821255
+	 Epoch3:7389.623799532652
+	 Epoch4:6893.538385361433
+Training finished in 897.1968 seconds.
+                Starting testing...
+...
+Testing finished in 19.388559579849243 seconds
+\Accuracy is 0.8856604788808179
+Starting training on fold 5 for 7-grams...
+	 Epoch0:11405.966053694487
+	 Epoch1:8780.357684999704
+	 Epoch2:7944.428223848343
+	 Epoch3:7296.188709408045
+	 Epoch4:6832.956300109625
+Training finished in 881.6020 seconds.
+                Starting testing...
+...
+Testing finished in 19.132164001464844 seconds
+\Accuracy is 0.8855259617971483
+Starting training on fold 6 for 7-grams...
+	 Epoch0:11285.605824410915
+	 Epoch1:8648.25922691822
+	 Epoch2:7882.631751179695
+	 Epoch3:7239.6642089784145
+	 Epoch4:6681.422298908234
+Training finished in 870.3472 seconds.
+                Starting testing...
+...
+Testing finished in 18.898219347000122 seconds
+\Accuracy is 0.880548829701372
+Starting training on fold 7 for 7-grams...
+	 Epoch0:11344.927943468094
+	 Epoch1:8783.057433366776
+	 Epoch2:7984.037329703569
+	 Epoch3:7374.4069693386555
+	 Epoch4:7001.616701602936
+Training finished in 876.2345 seconds.
+                Starting testing...
+...
+Testing finished in 18.351759672164917 seconds
+\Accuracy is 0.8857949959644875
+Starting training on fold 8 for 7-grams...
+	 Epoch0:11533.609453588724
+	 Epoch1:8575.256370812654
+	 Epoch2:7893.6857287585735
+	 Epoch3:7201.322670519352
+	 Epoch4:6511.353536903858
+Training finished in 984.2499 seconds.
+                Starting testing...
+...
+Testing finished in 20.51046061515808 seconds
+\Accuracy is 0.8825665859564165
+Starting training on fold 9 for 7-grams...
+	 Epoch0:11047.887176066637
+	 Epoch1:8737.701584130526
+	 Epoch2:8130.737460911274
+	 Epoch3:7520.299903661013
+	 Epoch4:7016.230371803045
+Training finished in 1011.9114 seconds.
+                Starting testing...
+...
+Testing finished in 20.10280752182007 seconds
+\Accuracy is 0.889561474307237
+Starting training on fold 10 for 7-grams...
+	 Epoch0:11681.423936218023
+	 Epoch1:8752.729064792395
+	 Epoch2:7886.443753153086
+	 Epoch3:7320.340449154377
+	 Epoch4:6771.072005242109
+Training finished in 994.5737 seconds.
+                Starting testing...
+...
+Testing finished in 18.542245626449585 seconds
+\Accuracy is 0.879472693032015
+Results are in for 7-grams
+	Finished 10 folds in 12808.4959 s
+	Average accuracy is:0.8851762173796072
+	Average F measure is:0.891224283594017
+defaultdict(<class 'float'>, {'accuracy': 0.8851762173796072, 'precision': 0.846558031726698, 'recall': 0.9413505515200431, 'fmeasure': 0.891224283594017, 'tp': 3499.0, 'tn': 3081.4, 'fp': 635.6, 'fn': 218.0, 'order': 7})
+The whole process on gpu took3 hours, 36 minutes and 5 seconds
+Word salad data has been generated for order 8
+	18582 word salads generated in 4706.630 seconds
+Starting training on fold 1 for 8-grams...
+	 Epoch0:10114.870678544044
+	 Epoch1:8491.460958987474
+	 Epoch2:7728.064142405987
+	 Epoch3:7283.860584706068
+	 Epoch4:6639.121074855328
+Training finished in 1028.2242 seconds.
+                Starting testing...
+...
+Testing finished in 22.45188879966736 seconds
+\Accuracy is 0.8876782351358623
+Starting training on fold 2 for 8-grams...
+	 Epoch0:10476.021346718073
+	 Epoch1:8455.785656183958
+	 Epoch2:7643.139764279127
+	 Epoch3:7084.094202816486
+	 Epoch4:6247.674837589264
+Training finished in 1035.4089 seconds.
+                Starting testing...
+...
+Testing finished in 22.12229037284851 seconds
+\Accuracy is 0.8931934355663169
+Starting training on fold 3 for 8-grams...
+	 Epoch0:10444.607824802399
+	 Epoch1:8110.921440809965
+	 Epoch2:7022.46888756752
+	 Epoch3:6469.954602897167
+	 Epoch4:6123.832507818937
+Training finished in 992.6919 seconds.
+                Starting testing...
+...
+Testing finished in 20.099288940429688 seconds
+\Accuracy is 0.8828356201237557
+Starting training on fold 4 for 8-grams...
+	 Epoch0:11100.467273563147
+	 Epoch1:8344.162918537855
+	 Epoch2:7171.877508312464
+	 Epoch3:7046.884427458048
+	 Epoch4:6313.498437553644
+Training finished in 908.3150 seconds.
+                Starting testing...
+...
+Testing finished in 20.130955696105957 seconds
+\Accuracy is 0.880548829701372
+Starting training on fold 5 for 8-grams...
+	 Epoch0:10367.696851700544
+	 Epoch1:8248.238233029842
+	 Epoch2:7440.934135198593
+	 Epoch3:7183.995213091373
+	 Epoch4:4776.861238986254
+Training finished in 907.8991 seconds.
+                Starting testing...
+...
+Testing finished in 20.058343410491943 seconds
+\Accuracy is 0.9974441754102771
+Starting training on fold 6 for 8-grams...
+	 Epoch0:10557.277699381113
+	 Epoch1:7973.209294766188
+	 Epoch2:8006.466589182615
+	 Epoch3:7343.380887806416
+	 Epoch4:6693.690532386303
+Training finished in 906.9484 seconds.
+                Starting testing...
+...
+Testing finished in 19.971704721450806 seconds
+\Accuracy is 0.8931934355663169
+Starting training on fold 7 for 8-grams...
+	 Epoch0:9999.751522511244
+	 Epoch1:8358.447424411774
+	 Epoch2:6891.802212834358
+	 Epoch3:6093.679154902697
+	 Epoch4:6709.578683167696
+Training finished in 910.9851 seconds.
+                Starting testing...
+...
+Testing finished in 20.404019832611084 seconds
+\Accuracy is 0.9324724239978477
+Starting training on fold 8 for 8-grams...
+	 Epoch0:10117.428742468357
+	 Epoch1:8486.3366574049
+	 Epoch2:7290.505662411451
+	 Epoch3:7412.700802206993
+	 Epoch4:6951.141773313284
+Training finished in 932.9790 seconds.
+                Starting testing...
+...
+Testing finished in 20.55796527862549 seconds
+\Accuracy is 0.892789884315308
+Starting training on fold 9 for 8-grams...
+	 Epoch0:10881.043443083763
+	 Epoch1:8587.024924129248
+	 Epoch2:7355.187341660261
+	 Epoch3:7394.430700063705
+	 Epoch4:5870.3937275111675
+Training finished in 932.2417 seconds.
+                Starting testing...
+...
+Testing finished in 20.56665802001953 seconds
+\Accuracy is 0.889561474307237
+Starting training on fold 10 for 8-grams...
+	 Epoch0:10466.579995274544
+	 Epoch1:8085.161335468292
+	 Epoch2:7236.950712412596
+	 Epoch3:7210.595521122217
+	 Epoch4:7205.072920620441
+Training finished in 932.5501 seconds.
+                Starting testing...
+...
+Testing finished in 20.442373514175415 seconds
+\Accuracy is 0.8898305084745762
+Results are in for 8-grams
+	Finished 10 folds in 14401.6798 s
+	Average accuracy is:0.903954802259887
+	Average F measure is:0.9095020351747923
+defaultdict(<class 'float'>, {'accuracy': 0.8851762173796072, 'precision': 0.846558031726698, 'recall': 0.9413505515200431, 'fmeasure': 0.891224283594017, 'tp': 3499.0, 'tn': 3081.4, 'fp': 635.6, 'fn': 218.0, 'order': 7})
+defaultdict(<class 'float'>, {'accuracy': 0.903954802259887, 'precision': 0.8660757579455807, 'recall': 0.958676351896691, 'fmeasure': 0.9095020351747923, 'tp': 3563.4, 'tn': 3156.6, 'fp': 560.4, 'fn': 153.6, 'order': 8})
+The whole process on gpu took7 hours, 36 minutes and 7 seconds
+Word salad data has been generated for order 9
+	18582 word salads generated in 4383.986 seconds
+Starting training on fold 1 for 9-grams...
+	 Epoch0:10118.208281442523
+	 Epoch1:9197.902051329613
+	 Epoch2:7862.798531204462
+	 Epoch3:6828.615174710751
+	 Epoch4:6626.540804982185
+Training finished in 985.7471 seconds.
+                Starting testing...
+...
+Testing finished in 20.816710948944092 seconds
+\Accuracy is 0.8918482647296206
+Starting training on fold 2 for 9-grams...
+	 Epoch0:10350.820890069008
+	 Epoch1:8026.848668664694
+	 Epoch2:7242.236598372459
+	 Epoch3:7662.202189922333
+	 Epoch4:6565.837392926216
+Training finished in 988.2791 seconds.
+                Starting testing...
+...
+Testing finished in 21.424179077148438 seconds
+\Accuracy is 0.896421845574388
+Starting training on fold 3 for 9-grams...
+	 Epoch0:8604.492604464293
+	 Epoch1:6023.245981007814
+	 Epoch2:9163.950711369514
+	 Epoch3:8142.181459903717
+	 Epoch4:7423.208361983299
+Training finished in 993.1385 seconds.
+                Starting testing...
+...
+Testing finished in 21.006425857543945 seconds
+\Accuracy is 0.8944040893193436
+Starting training on fold 4 for 9-grams...
+	 Epoch0:8851.314567416906
+	 Epoch1:6666.217253297567
+	 Epoch2:7971.914574354887
+	 Epoch3:7640.992997556925
+	 Epoch4:7236.551548928022
+Training finished in 982.8538 seconds.
+                Starting testing...
+...
+Testing finished in 20.839082956314087 seconds
+\Accuracy is 0.8872746838848534
+Starting training on fold 5 for 9-grams...
+	 Epoch0:8155.780237078667
+	 Epoch1:8573.10296010971
+	 Epoch2:7822.389699757099
+	 Epoch3:7084.334539562464
+	 Epoch4:6830.499343901873
+Training finished in 969.7179 seconds.
+                Starting testing...
+...
+Testing finished in 21.748772144317627 seconds
+\Accuracy is 0.8894269572235673
+Starting training on fold 6 for 9-grams...
+	 Epoch0:10101.399640381336
+	 Epoch1:8111.635446578264
+	 Epoch2:5185.550250411034
+	 Epoch3:4441.012296140194
+	 Epoch4:3706.8174990713596
+Training finished in 979.8960 seconds.
+                Starting testing...
+...
+Testing finished in 20.617181301116943 seconds
+\Accuracy is 0.9490180252892118
+Starting training on fold 7 for 9-grams...
+	 Epoch0:9422.562256962061
+	 Epoch1:6113.779496729374
+	 Epoch2:7181.000813215971
+	 Epoch3:7844.914572745562
+	 Epoch4:7608.1035377681255
+Training finished in 977.5422 seconds.
+                Starting testing...
+...
+Testing finished in 20.541094541549683 seconds
+\Accuracy is 0.8921172988969599
+Starting training on fold 8 for 9-grams...
+	 Epoch0:10238.737490355968
+	 Epoch1:8314.705060720444
+	 Epoch2:6273.618814408779
+	 Epoch3:6828.756238937378
+	 Epoch4:6188.307390809059
+Training finished in 984.8367 seconds.
+                Starting testing...
+...
+Testing finished in 20.99240779876709 seconds
+\Accuracy is 0.8883508205542103
+Starting training on fold 9 for 9-grams...
+	 Epoch0:9029.655709832907
+	 Epoch1:8642.611704200506
+	 Epoch2:8305.227079331875
+	 Epoch3:7789.982328146696
+	 Epoch4:6856.52723044157
+Training finished in 974.3914 seconds.
+                Starting testing...
+...
+Testing finished in 21.00300168991089 seconds
+\Accuracy is 0.89924670433145
+Starting training on fold 10 for 9-grams...
+	 Epoch0:9533.152857452631
+	 Epoch1:8027.6965245604515
+	 Epoch2:7410.6630517840385
+	 Epoch3:7607.155635505915
+	 Epoch4:7378.138841629028
+Training finished in 982.8994 seconds.
+                Starting testing...
+...
+Testing finished in 20.471281051635742 seconds
+\Accuracy is 0.8887543718052192
+Results are in for 9-grams
+	Finished 10 folds in 14412.7487 s
+	Average accuracy is:0.8976863061608824
+	Average F measure is:0.9040819613289216
+defaultdict(<class 'float'>, {'accuracy': 0.8851762173796072, 'precision': 0.846558031726698, 'recall': 0.9413505515200431, 'fmeasure': 0.891224283594017, 'tp': 3499.0, 'tn': 3081.4, 'fp': 635.6, 'fn': 218.0, 'order': 7})
+defaultdict(<class 'float'>, {'accuracy': 0.903954802259887, 'precision': 0.8660757579455807, 'recall': 0.958676351896691, 'fmeasure': 0.9095020351747923, 'tp': 3563.4, 'tn': 3156.6, 'fp': 560.4, 'fn': 153.6, 'order': 8})
+defaultdict(<class 'float'>, {'accuracy': 0.8976863061608824, 'precision': 0.8524613836636912, 'recall': 0.9628194780737154, 'fmeasure': 0.9040819613289216, 'tp': 3578.8, 'tn': 3094.6, 'fp': 622.4, 'fn': 138.2, 'order': 9})
+The whole process on gpu took11 hours, 36 minutes and 20 seconds
+Word salad data has been generated for order 10
+	18582 word salads generated in 5309.894 seconds
+Starting training on fold 1 for 10-grams...
+	 Epoch0:8118.5521838366985
+	 Epoch1:7220.574159771204
+	 Epoch2:7457.1026040017605
+	 Epoch3:6002.6285101771355
+	 Epoch4:6514.902388751507
+Training finished in 1028.6496 seconds.
+                Starting testing...
+...
+Testing finished in 22.361003875732422 seconds
+\Accuracy is 0.9139090664514393
+Starting training on fold 2 for 10-grams...
+	 Epoch0:5132.770364493132
+	 Epoch1:6307.725485235453
+	 Epoch2:9036.398110717535
+	 Epoch3:8429.883871138096
+	 Epoch4:7890.468368828297
+Training finished in 1038.0116 seconds.
+                Starting testing...
+...
+Testing finished in 22.277706384658813 seconds
+\Accuracy is 0.893866020984665
+Starting training on fold 3 for 10-grams...
+	 Epoch0:9076.727226376534
+	 Epoch1:6933.459608286619
+	 Epoch2:3063.6833940148354
+	 Epoch3:5822.222560048103
+	 Epoch4:8826.329517424107
+Training finished in 1032.7702 seconds.
+                Starting testing...
+...
+Testing finished in 22.006099462509155 seconds
+\Accuracy is 0.8921172988969599
+Starting training on fold 4 for 10-grams...
+	 Epoch0:9685.053459256887
+	 Epoch1:8194.266548067331
+	 Epoch2:5265.065257281065
+	 Epoch3:4498.2347657978535
+	 Epoch4:3011.2333577275276
+Training finished in 1023.3550 seconds.
+                Starting testing...
+...
+Testing finished in 22.107994556427002 seconds
+\Accuracy is 0.9854721549636803
+Starting training on fold 5 for 10-grams...
+	 Epoch0:7894.705965489149
+	 Epoch1:3458.351011991501
+	 Epoch2:6822.411117464304
+	 Epoch3:5496.722224920988
+	 Epoch4:9466.369308233261
+Training finished in 1029.4394 seconds.
+                Starting testing...
+...
+Testing finished in 22.360313415527344 seconds
+\Accuracy is 0.8709981167608286
+Starting training on fold 6 for 10-grams...
+	 Epoch0:9409.260104387999
+	 Epoch1:4703.571954399347
+	 Epoch2:2217.218048363924
+	 Epoch3:1331.7311838269234
+	 Epoch4:1227.654822230339
+Training finished in 1032.4363 seconds.
+                Starting testing...
+...
+Testing finished in 22.002330780029297 seconds
+\Accuracy is 0.9097390368576809
+Starting training on fold 7 for 10-grams...
+	 Epoch0:9786.026325494051
+	 Epoch1:7447.8891243338585
+	 Epoch2:4524.84441074729
+	 Epoch3:1596.7622818350792
+	 Epoch4:2426.4848684072495
+Training finished in 1030.7275 seconds.
+                Starting testing...
+...
+Testing finished in 22.699470043182373 seconds
+\Accuracy is 0.9394673123486683
+Starting training on fold 8 for 10-grams...
+	 Epoch0:9172.737758010626
+	 Epoch1:8461.224186956882
+	 Epoch2:6352.903293341398
+	 Epoch3:3700.5676849484444
+	 Epoch4:5996.665024071932
+Training finished in 1031.8202 seconds.
+                Starting testing...
+...
+Testing finished in 22.532071828842163 seconds
+\Accuracy is 0.8796072101156847
+Starting training on fold 9 for 10-grams...
+	 Epoch0:11008.348329991102
+	 Epoch1:8694.263249397278
+	 Epoch2:7449.406096667051
+	 Epoch3:6569.963931471109
+	 Epoch4:6742.72338861227
+Training finished in 1035.5314 seconds.
+                Starting testing...
+...
+Testing finished in 21.667901515960693 seconds
+\Accuracy is 0.8954802259887006
+Starting training on fold 10 for 10-grams...
+	 Epoch0:8410.981781333685
+	 Epoch1:4929.548123538494
+	 Epoch2:6465.898820400238
+	 Epoch3:9281.77988654375
+	 Epoch4:8413.884721815586
+Training finished in 1032.5013 seconds.
+                Starting testing...
+...
+Testing finished in 22.482961177825928 seconds
+\Accuracy is 0.8816249663707291
+Results are in for 10-grams
+	Finished 10 folds in 15847.6351 s
+	Average accuracy is:0.9062281409739036
+	Average F measure is:0.9121526039854018
+defaultdict(<class 'float'>, {'accuracy': 0.8851762173796072, 'precision': 0.846558031726698, 'recall': 0.9413505515200431, 'fmeasure': 0.891224283594017, 'tp': 3499.0, 'tn': 3081.4, 'fp': 635.6, 'fn': 218.0, 'order': 7})
+defaultdict(<class 'float'>, {'accuracy': 0.903954802259887, 'precision': 0.8660757579455807, 'recall': 0.958676351896691, 'fmeasure': 0.9095020351747923, 'tp': 3563.4, 'tn': 3156.6, 'fp': 560.4, 'fn': 153.6, 'order': 8})
+defaultdict(<class 'float'>, {'accuracy': 0.8976863061608824, 'precision': 0.8524613836636912, 'recall': 0.9628194780737154, 'fmeasure': 0.9040819613289216, 'tp': 3578.8, 'tn': 3094.6, 'fp': 622.4, 'fn': 138.2, 'order': 9})
+defaultdict(<class 'float'>, {'accuracy': 0.9062281409739036, 'precision': 0.8674642173472845, 'recall': 0.9665859564164648, 'fmeasure': 0.9121526039854018, 'tp': 3592.8, 'tn': 3144.1, 'fp': 572.9, 'fn': 124.2, 'order': 10})
+The whole process on gpu took16 hours, 0 minutes and 27 seconds
