@@ -1,0 +1,7 @@
+Currently Loaded Modulefiles:
+  1) pbs/13.1.2.163512         6) openmpi/2.1.0_intel_dev
+  2) intel/17.0.2              7) irods/3.3
+  3) gcc/4.9                   8) openmpi/1.8.4_intel
+  4) cuda/8.0.44               9) readline/6.3_intel
+  5) java/1.8.0               10) python/3.6.0_anaconda
+/var/spool/PBS/mom_priv/jobs/104038.penziasadmin.csi.cuny.edu.SC: line 19: echoSe chispotio?: command not found

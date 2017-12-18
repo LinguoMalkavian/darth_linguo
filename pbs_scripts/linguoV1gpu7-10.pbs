@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q production
-#PBS -N LV110fold
+#PBS -N LV1toy7-10
 #PBS -l select=1:ncpus=1:ngpus=1
 #PBS -l place=free
 #PBS -V
@@ -9,6 +9,6 @@
 cd $PBS_O_WORKDIR
 cd darth_linguo
 module load python/3.6.0_anaconda
-echo ">>>> Begin Linguo V1 With Cross Validation"
+echo ">>>> Begin Linguo V1 With Cross Validation on euro.toy with gpu"
 
-python Linguo_V1crossVfull.py
+python Linguo_V1.1crossvgpuf.py euro.toy 10 1 10 0.8 32 32 32 5 0.1

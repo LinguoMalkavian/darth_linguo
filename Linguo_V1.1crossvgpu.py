@@ -18,13 +18,136 @@ from collections import defaultdict
 import math
 from string import capwords
 from time import time
+import sys
 
 
-# In[2]:
+def main():
+    # Modify parameters here
+    corpus_name = sys.argv[1]
+    max_ngram = int(sys.argv[2])
+    hap_thresh = int(sys.argv[3])
+    folds = int(sys.argv[4])
+    train_proportion = float(sys.argv[5])
+    embed_dim = int(sys.argv[6])
+    lstm_dim = int(sys.argv[7])
+    hidden_dim = int(sys.argv[8])
+    epochs = int(sys.argv[9])
+    learning_rate = float(sys.argv[10])
 
+    talpha = time()
+    # Load and preprocess the grammatical part of the corpus
+    t1 = time()
 
-# Methods for importing, preprocessing and generating data
+    corpus = load_grammatical_corpus(corpus_name)
+    word2id, hapaxes, vocab, probdist, ucounts = get_vocabulary(corpus,
+                                                                hap_thresh)
+    prepro_gram = token_replacement(corpus, hapaxes)
+    message = "Your corpus has {sent} grammatical sentences".format(
+                                                        sent=len(prepro_gram))
+    print(message)
+    message = "Grammatical corpus loaded in {:.3f} seconds".format(time()-t1)
 
+    # Get sentence length statistics
+    lengths = [len(sent) for sent in prepro_gram]
+    avg_sent_length = np.mean(lengths)
+    length_sd = np.std(lengths)
+
+    full_results = []
+    # Run for each n, with x-fold cross validation
+    for n in range(1, max_ngram+1):
+        t2 = time()
+        # Generate the word salads
+        message = "Generating word salads of order {}...".format(n)
+        t1 = time()
+        nsal = len(prepro_gram)
+        if n == 1:
+            word_salads = [generateWSuni(vocab,
+                                         probdist,
+                                         avg_sent_length,
+                                         length_sd)
+                           for _ in range(nsal)]
+        else:
+            n_freqs = extract_ngram_freq(prepro_gram, n)
+            word_salads = [generateWSNgram(n_freqs,
+                                           avg_sent_length,
+                                           length_sd,
+                                           n,
+                                           ucounts)
+                           for _ in range(nsal)]
+
+        labeled_g = [[sentence, 1] for sentence in prepro_gram]
+        labeled_ws = [[sentence, 0] for sentence in word_salads]
+
+        message = "Word salad data has been generated for order {}".format(n)
+        print(message)
+        te = time() - t1
+        message = "\t{} word salads generated in {:.3f} seconds".format(nsal,
+                                                                        te)
+        print(message)
+        message = "Starting experiment on {}-grams ...".format(n)
+
+        result_list = []
+        # Iterate over the number of folds
+        for fold in range(folds):
+            t1 = time()
+            message = "Starting training on fold {} for {}-grams...".format(
+                                                                    fold+1, n)
+            print(message)
+            # Shuffle and split data
+            random.shuffle(labeled_g)
+            random.shuffle(labeled_ws)
+            cutoff = math.floor(train_proportion * len(labeled_g))
+            train_g, test_g = labeled_g[:cutoff], labeled_g[cutoff:]
+            train_ws, test_ws = labeled_ws[:cutoff], labeled_ws[cutoff:]
+
+            train_data = train_g + train_ws
+            random.shuffle(train_data)
+
+            test_data = test_g + test_ws
+            random.shuffle(test_data)
+
+            # Train the Model
+            model = train_model(train_data,
+                                embed_dim,
+                                lstm_dim,
+                                hidden_dim,
+                                word2id,
+                                epochs,
+                                learning_rate)
+            te = time()-t1
+            message = '''Training finished in {:.4f} seconds.
+                Starting testing...'''.format(te)
+            print(message)
+            print("...")
+            t1 = time()
+            # Test the Model
+            fold_results = test_model(test_data, model, word2id)
+            result_list.append(fold_results)
+            te = time()-t1
+            message = "Testing finished in {} seconds".format(te)
+            print(message)
+            message = "\Accuracy is {}".format(fold_results['accuracy'])
+            print(message)
+
+        order_results = average_results(result_list)
+        te2 = time() - t2
+        message = "Results are in for {}-grams".format(n)
+        print(message)
+        message = "\tFinished {} folds in {:.4f} s".format(folds, te2)
+        print(message)
+        message = "\tAverage accuracy is:{}".format(order_results["accuracy"])
+        print(message)
+        message = "\tAverage F measure is:{}".format(order_results["fmeasure"])
+        print(message)
+        order_results["order"] = n
+        full_results.append(order_results)
+
+        for resul in full_results:
+            print(resul)
+        ttotal = time() - talpha
+        timestr = seconds_to_hms(ttotal)
+        message = "The whole process on gpu took{}".format(timestr)
+        print(message)
 
 def load_grammatical_corpus(input_corpus_filename):
     input_corpus_path = "Data/"+input_corpus_filename
@@ -50,8 +173,8 @@ def load_grammatical_corpus(input_corpus_filename):
 
     random.shuffle(real_text)
     # Process the input sentences (for tokenization, tokenizer sucks otherwise)
-    #tokenizer = MosesTokenizer()
-    #tokenized = [tokenizer.tokenize(sentence) for sentence in real_text]
+    # tokenizer = MosesTokenizer()
+    # tokenized = [tokenizer.tokenize(sentence) for sentence in real_text]
     tokenized = [word_tokenize(sentence) for sentence in real_text]
     return tokenized
 
@@ -217,8 +340,8 @@ class Linguo(nn.Module):
         return decision_fin
 
     def init_hstate(self):
-        var1 = autograd.Variable(torch.zeros(1, 1, self.hidden_dim))
-        var2 = autograd.Variable(torch.zeros(1, 1, self.hidden_dim))
+        var1 = autograd.Variable(torch.zeros(1, 1, self.hidden_dim)).cuda()
+        var2 = autograd.Variable(torch.zeros(1, 1, self.hidden_dim)).cuda()
         hidden_state = (var1, var2)
         return hidden_state
 
@@ -230,8 +353,8 @@ def prepare_input(word_to_ix, sentence):
             idxs.append(word_to_ix[word.lower()])
         else:
             idxs.append(word_to_ix["#unk"])
-    tensor = torch.LongTensor(idxs)
-    return autograd.Variable(tensor)
+    tensor = torch.LongTensor(idxs).cuda()
+    return autograd.Variable(tensor).cuda()
 
 
 # Training time! Cue Eye of the Tiger
@@ -244,9 +367,9 @@ def train_model(train_data,
                 learning_rate):
     voc_size = len(word_to_ix)
     # Initialize model
-    linguo = Linguo(embed_dim, voc_size, lstm_dim, hidden_dim)
+    linguo = Linguo(embed_dim, voc_size, lstm_dim, hidden_dim).cuda()
     optimizer = optim.SGD(linguo.parameters(), lr=learning_rate)
-    loss_function = nn.NLLLoss()
+    loss_function = nn.NLLLoss().cuda()
 
     for i in range(epochs):
         epoch_loss = 0
@@ -255,8 +378,8 @@ def train_model(train_data,
             # Restart gradient
             linguo.zero_grad()
             # Run model
-            in_sentence = prepare_input(word_to_ix, data)
-            target = autograd.Variable(torch.LongTensor([label]))
+            in_sentence = prepare_input(word_to_ix, data).cuda()
+            target = autograd.Variable(torch.LongTensor([label])).cuda()
             prediction = linguo(in_sentence)
             # Calculate loss and backpropagate
 
@@ -326,130 +449,15 @@ def average_results(result_list):
     return averaged
 
 
-# This cell runs the full experiment with cross validation
-
-def main():
-    # Modify parameters here
-    corpus_name = "euro.mini"
-    max_ngram = 6
-    hap_thresh = 1
-    folds = 10
-    train_proportion = 0.8
-    embed_dim = 32
-    lstm_dim = 32
-    hidden_dim = 32
-    epochs = 5
-    learning_rate = 0.1
-
-    # Load and preprocess the grammatical part of the corpus
-    t1 = time()
-
-    corpus = load_grammatical_corpus(corpus_name)
-    word2id, hapaxes, vocab, probdist, ucounts = get_vocabulary(corpus,
-                                                                hap_thresh)
-    prepro_gram = token_replacement(corpus, hapaxes)
-    message = "Your corpus has {sent} grammatical sentences".format(
-                                                        sent=len(prepro_gram))
-    print(message)
-    message = "Grammatical corpus loaded in {:.3f} seconds".format(time()-t1)
-
-    # Get sentence length statistics
-    lengths = [len(sent) for sent in prepro_gram]
-    avg_sent_length = np.mean(lengths)
-    length_sd = np.std(lengths)
-
-    full_results = []
-    # Run for each n, with x-fold cross validation
-    for n in range(1, max_ngram+1):
-        t2 = time()
-        # Generate the word salads
-        message = "Generating word salads of order {}...".format(n)
-        t1 = time()
-        nsal = len(prepro_gram)
-        if n == 1:
-            word_salads = [generateWSuni(vocab,
-                                         probdist,
-                                         avg_sent_length,
-                                         length_sd)
-                           for _ in range(nsal)]
-        else:
-            n_freqs = extract_ngram_freq(prepro_gram, n)
-            word_salads = [generateWSNgram(n_freqs,
-                                           avg_sent_length,
-                                           length_sd,
-                                           n,
-                                           ucounts)
-                           for _ in range(nsal)]
-
-        labeled_g = [[sentence, 1] for sentence in prepro_gram]
-        labeled_ws = [[sentence, 0] for sentence in word_salads]
-
-        message = "Word salad data has been generated for order {}".format(n)
-        print(message)
-        te = time() - t1
-        message = "\t{} word salads generated in {:.3f} seconds".format(nsal,
-                                                                        te)
-        print(message)
-        message = "Starting experiment on {}-grams ...".format(n)
-
-        result_list = []
-        # Iterate over the number of folds
-        for fold in range(folds):
-            t1 = time()
-            message = "Starting training on fold {} for {}-grams...".format(
-                                                                    fold+1, n)
-            print(message)
-            # Shuffle and split data
-            random.shuffle(labeled_g)
-            random.shuffle(labeled_ws)
-            cutoff = math.floor(train_proportion * len(labeled_g))
-            train_g, test_g = labeled_g[:cutoff], labeled_g[cutoff:]
-            train_ws, test_ws = labeled_ws[:cutoff], labeled_ws[cutoff:]
-
-            train_data = train_g + train_ws
-            random.shuffle(train_data)
-
-            test_data = test_g + test_ws
-            random.shuffle(test_data)
-
-            # Train the Model
-            model = train_model(train_data,
-                                embed_dim,
-                                lstm_dim,
-                                hidden_dim,
-                                word2id,
-                                epochs,
-                                learning_rate)
-            te = time()-t1
-            message = '''Training finished in {:.4f} seconds.
-                Starting testing...'''.format(te)
-            print(message)
-            print("...")
-            t1 = time()
-            # Test the Model
-            fold_results = test_model(test_data, model, word2id)
-            result_list.append(fold_results)
-            te = time()-t1
-            message = "Testing finished in {} seconds".format(te)
-            print(message)
-            message = "\Accuracy is {}".format(fold_results['accuracy'])
-            print(message)
-
-        order_results = average_results(result_list)
-        te2 = time() - t2
-        message = "Results are in for {}-grams".format(n)
-        print(message)
-        message = "\tFinished {} folds in {:.4f} s".format(folds, te2)
-        print(message)
-        message = "\tAverage accuracy is:{}".format(order_results["accuracy"])
-        print(message)
-        message = "\tAverage F measure is:{}".format(order_results["fmeasure"])
-        print(message)
-        order_results["order"] = n
-        full_results.append(order_results)
-
-    for resul in full_results:
-        print(resul)
+def seconds_to_hms(secondsin):
+    hours = math.floor(secondsin / 3600)
+    remain = secondsin % 3600
+    minutes = math.floor(remain / 60)
+    seconds = math.floor(remain % 60)
+    answer = "{h} hours, {m} minutes and {s} seconds".format(h=hours,
+                                                             m=minutes,
+                                                             s=seconds)
+    return answer
 
 
 main()
