@@ -1,0 +1,18 @@
+
+Results onData/hundo_gram versus Data/euro.hundo2_2-gramsWS
+{'accuracy': 0.9920896683023623, 'precision': 0.993078656508209, 'recall': 0.9910580424073677, 'fmeasure': 0.9920673205767272, 'tp': 18509.0, 'tn': 18489.0, 'fp': 129.0, 'fn': 166.0}
+
+Results onData/hundo_gram versus Data/euro.hundo2_3-gramsWS
+{'accuracy': 0.9643096559676079, 'precision': 0.9746059544658494, 'recall': 0.9535232383808095, 'fmeasure': 0.9639493341994154, 'tp': 17808.0, 'tn': 18154.0, 'fp': 464.0, 'fn': 867.0}
+Starting experiment on Data/hundo_gram versus Data/euro.hundo2_4-gramsWS
+
+Results onData/hundo_gram versus Data/euro.hundo2_4-gramsWS
+{'accuracy': 0.9525916391816158, 'precision': 0.9668120823899718, 'recall': 0.9374598415078175, 'fmeasure': 0.9519097458203072, 'tp': 17508.0, 'tn': 18017.0, 'fp': 601.0, 'fn': 1167.0}
+Starting experiment on Data/hundo_gram versus Data/euro.hundo2_5-gramsWS
+
+Results onData/hundo_gram versus Data/euro.hundo2_5-gramsWS
+{'accuracy': 0.9457002654653688, 'precision': 0.9423485653560042, 'recall': 0.9496144784750482, 'fmeasure': 0.9459675698741199, 'tp': 17735.0, 'tn': 17533.0, 'fp': 1085.0, 'fn': 940.0}
+Starting experiment on Data/hundo_gram versus Data/euro.hundo2_6-gramsWS
+
+Results onData/hundo_gram versus Data/euro.hundo2_6-gramsWS
+{'accuracy': 0.9477649961118708, 'precision': 0.937673347637239, 'recall': 0.9594131505675734, 'fmeasure': 0.9484186846632261, 'tp': 17918.0, 'tn': 17427.0, 'fp': 1191.0, 'fn': 757.0}

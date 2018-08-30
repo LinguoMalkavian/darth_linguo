@@ -1,0 +1,18 @@
+
+on SLOR trained with the same data as the W-s with 3 gram Model and sandwich:
+
+bigram:
+The sandwich model has accuracy 0.5743, with F-measure 0.6813 precision 0.5445 and recall 0.9098
+The model has accuracy 0.5725, with F-measure 0.6793 precision 0.5436 and recall 0.9055
+
+trigram:
+The sandwich model has accuracy 0.7428, with F-measure 0.7749 precision 0.6889 and recall 0.8856
+The model has accuracy 0.5338, with F-measure 0.6711 precision 0.5184 and recall 0.9513
+
+quad-gram:
+The model has accuracy 0.5347, with F-measure 0.6715 precision 0.5189 and recall 0.951
+The sandwich model has accuracy 0.7257, with F-measure 0.7593 precision 0.6765 and recall 0.8652
+
+pentagram:
+The model has accuracy 0.535, with F-measure 0.6718 precision 0.5191 and recall 0.9518
+The sandwich model has accuracy 0.7187, with F-measure 0.7568 precision 0.6666 and recall 0.8753
