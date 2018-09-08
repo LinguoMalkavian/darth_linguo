@@ -93,36 +93,35 @@ class Experimenter():
         message = "Starting experiment on {}-grams ...".format(n)
         return labeled_ws
 
-    def load_raw_grammatical_corpus(self, input_corpus_filename):
+    def load_raw_grammatical_corpus(self, input_corpus_filename, minlength=7):
         input_corpus_path = input_corpus_filename
         in_file = open(input_corpus_path, "r")
-        real_text = []
-        tokenized = [word_tokenize(sentence) for sentence in real_text]
         numlines = 0
         inter_excl = 0
+        tokenized_sentences = []
         for line in in_file.readlines():
             # Keep only sentences, those have a period at the end
             if line.strip() != "":
                 if line.strip()[-1] == ".":
                     tokenized = word_tokenize(line)
-                    if len(tokenized) >= 7:
-                        tokenized.append(line.strip())
+                    tokenized.append("<eos>")
+                    if len(tokenized) >= minlength:
+                        tokenized_sentences.append(line.strip())
                 elif line.strip()[-1] == "?" or line.strip()[-1] == "!":
                     inter_excl += 1
             numlines += 1
 
-        n_sent = len(real_text)
+        n_sent = len(tokenized_sentences)
         print('''Full corpus has {} sentences,
         \t {} were dumped,
-        among which {} interogatives or exclamatives'''.format(n_sent,
-                                                               numlines-n_sent,
-                                                               inter_excl))
+        with {} interogatives or exclamatives.'''.format(n_sent,
+                                                         numlines-n_sent,
+                                                         inter_excl))
 
-        random.shuffle(real_text)
+        random.shuffle(tokenized_sentences)
         # tokenizer = MosesTokenizer()
         # tokenized = [tokenizer.tokenize(sentence) for sentence in real_text]
-
-        return tokenized
+        return tokenized_sentences
 
     # Method to extract:
     # The word2idx, a dictionary from vocabulary words to unique integers
