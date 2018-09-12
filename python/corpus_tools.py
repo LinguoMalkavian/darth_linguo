@@ -1,12 +1,22 @@
 import csv
 from nltk import word_tokenize
 import random
+import datetime
+import math
 import os
 
 
 def getDataPath(corpusName):
+    """Gives the full path prefix for data includes begining of fileName)"""
+
+    dataPath = getDataFolderPath + corpusName
+    return dataPath
+
+
+def getDataFolderPath(corpusName):
+    """Gives the path of the data folder"""
     basePath = "/".join(os.getcwd().split("/")[:-1])
-    dataPath = basePath + "/Data/" + corpusName + "/" + corpusName
+    dataPath = basePath + "/Data/"
     return dataPath
 
 
@@ -41,7 +51,21 @@ def load_raw_grammatical_corpus(input_corpus_filename, minlength=7):
     return tokenized_sentences
 
 
+def saveErrors(falseNegatives, falsePositives, corpus_name, noiseName):
+    """Saves false negatives and false positives to their own files"""
+
+    dataFolder = getDataFolderPath(corpus_name)
+    date = datetime.datetime.now()
+    baseName = dataFolder + "errors/" + corpus_name + "VS"
+    baseName += noiseName + "gram-" + str(date)
+    falseNeg_fn = baseName + "-false_negatives"
+    falsePos_fn = baseName + "-false_positives"
+    save_tokenized_corpus(falseNeg_fn, falseNegatives)
+    save_tokenized_corpus(falsePos_fn, falsePositives)
+
+
 def save_tokenized_corpus(filename, sentences):
+    """Saves an already tokenized corpus to file"""
     with open(filename, "w") as outfile:
         for tokenList in sentences:
             sentString = " ".join(tokenList)+"\n"
@@ -96,5 +120,50 @@ def loadWord2Id(corpusPath):
     with open(filename, "r") as inFile:
         reader = csv.reader(inFile)
         for row in reader:
-            word2Id[row[0]] = row[1]
+            word2Id[row[0]] = int(row[1])
     return word2Id
+
+
+def labelAndShuffleItems(positiveItems, negativeItems):
+    """Produces a single list of test instances with labels"""
+
+    labeledPositive = [(sentence, 1) for sentence in positiveItems]
+    labeledNegative = [(sentence, 0) for sentence in negativeItems]
+    labeled = labeledPositive + labeledNegative
+    random.shuffle(labeled)
+    return labeled
+
+
+def saveResults(self, resultStr, corpusPath):
+    """Appends results to a single result file per corpus"""
+
+    results_fn = corpusPath+"-results"
+    with open(results_fn, "a+") as resultsFile:
+        resultsFile.write(resultStr)
+
+
+def makeResultsString(self, results):
+    """Produces string version of results dictionary"""
+
+    response = ""
+    date = datetime.datetime.now()
+    header = "Experiment: grammatical V.S {} noise\n".format(
+                                                results["noise-type"])
+    response += header
+    timestr = "realized on {}:".format(str(date))
+    response += timestr
+    for key in results:
+        if key != "noise-type":
+            response += "{}:{}\n".format(key, results[key])
+    return response
+
+
+def seconds_to_hms(secondsin):
+    hours = math.floor(secondsin/3600)
+    remain = secondsin % 3600
+    minutes = math.floor(remain/60)
+    seconds = math.floor(remain % 60)
+    answer = "{h} hours, {m} minutes and {s} seconds".format(h=hours,
+                                                             m=minutes,
+                                                             s=seconds)
+    return answer
