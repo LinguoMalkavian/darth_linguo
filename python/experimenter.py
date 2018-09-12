@@ -10,7 +10,6 @@ from tqdm import tqdm
 from collections import defaultdict
 import math
 from time import time
-import datetime
 import sys
 import corpus_tools
 
@@ -34,37 +33,46 @@ class Experimenter():
         self.learning_rate = learning_rate
         self.use_gpu = use_gpu
         self.word2id = {}
+        self.corpusPath = corpus_tools.getDataPath(corpus_name)
 
-    def runSingleExperiment(self, corpusPath, noiseName):
+    def runSingleExperiment(self, noiseName):
+        """Loads """
+
+        startingTime = time()
         # Load the training corpus
-        self.word2id = corpus_tools.loadWord2Id(corpusPath)
-        gramTrain_fn = corpusPath + "-grammatical-train"
-        noiseTrain_fn = corpusPath + "-" + noiseName + "-train"
+        self.word2id = corpus_tools.loadWord2Id(self.corpusPath)
+        gramTrain_fn = self.corpusPath + "-grammatical-train"
+        noiseTrain_fn = self.corpusPath + "-" + noiseName + "-train"
         gramTrain = corpus_tools.load_tokenized_corpus(gramTrain_fn)
-        labeledGramTrain = [(sentence, 1) for sentence in gramTrain]
         noiseTrain = corpus_tools.load_tokenized_corpus(noiseTrain_fn)
-        labeledNoiseTrain = [(sentence, 0) for sentence in noiseTrain]
-        labeledTrain = labeledGramTrain + labeledNoiseTrain
+        labeledTrain = corpus_tools.labelAndShuffleItems(gramTrain, noiseTrain)
         random.shuffle(labeledTrain)
         # Train the Model
         model = self.train_model(labeledTrain)
-
-        # Get test data
-        gramTest_fn = corpusPath + "-grammatical-test"
-        noiseTest_fn = corpusPath + "-" + noiseName + "-test"
+        trainDoneT = time()
+        training_time = corpus_tools.seconds_to_hms(trainDoneT - startingTime)
+        # Load test data
+        gramTest_fn = self.corpusPath + "-grammatical-test"
+        noiseTest_fn = self.corpusPath + "-" + noiseName + "-test"
         gramTest = corpus_tools.load_tokenized_corpus(gramTest_fn)
-        labeledGramTest = [(sentence, 1) for sentence in gramTest]
         noiseTest = corpus_tools.load_tokenized_corpus(noiseTest_fn)
-        labeledNoiseTest = [(sentence, 0) for sentence in noiseTest]
-        labeledTest = labeledGramTest + labeledNoiseTest
-        results = self.test_model(labeledTest, model)
+        labeledTest = corpus_tools.labelAndShuffleItems(gramTest, noiseTest)
+        # Run test
+        results, falseNegs, falsePos = self.test_model(labeledTest, model)
+        testing_time = corpus_tools.seconds_to_hms(time()-trainDoneT)
+        # Print and Save results
         results["noise-type"] = noiseName
-        resultStr = self.makeResultsString(results)
+        results["Training time"] = training_time
+        results["Testing time"] = testing_time
+        resultStr = corpus_tools.makeResultsString(results)
+        resultStr += self.getParametersString()
         print(resultStr)
-        self.saveResults(resultStr, corpusPath)
+        self.saveResults(resultStr, self.corpusPath)
+        self.saveErrors(falseNegs, falsePos, self.corpus_name, noiseName)
 
-    # Training time! Cue Eye of the Tiger
     def train_model(self, train_data):
+        """Train a new model with the given data"""
+
         voc_size = len(self.word2id)
         # Initialize model
         if self.use_gpu:
@@ -119,6 +127,8 @@ class Experimenter():
         fp = 0.0
         fn = 0.0
         print("Begining test")
+        falseNegs = []
+        falsePos = []
         for testcase in tqdm(test_data):
             target = testcase[1]
             prepared_inputs = self.prepare_input(testcase[0])
@@ -136,8 +146,10 @@ class Experimenter():
             else:
                 if target == 1:
                     fn += 1
+                    falseNegs.append(testcase[0])
                 else:
                     fp += 1
+                    falsePos.append(testcase[0])
 
         # Compile results
         accuracy = correct/len(test_data)
@@ -150,7 +162,7 @@ class Experimenter():
                    "tn": tn,
                    "fp": fp,
                    "fn": fn}
-        return results
+        return results, falseNegs, falsePos
 
     def average_results(self, result_list):
         total = len(result_list)
@@ -161,6 +173,19 @@ class Experimenter():
         for item in averaged:
             averaged[item] = averaged[item]/total
         return averaged
+
+    def getParametersString(self):
+        """Gives a string with the experimental settings"""
+
+        results = ""
+        results += " Embedding:" + str(self.embed_dim)
+        results += " LSTM" + str(self.lstm_dim)
+        results += " Hidden" + str(self.hidden_dim)
+        results += " Epochs" + str(self.epochs)
+        results += " learning_rate" + str(self.learning_rate)
+        results += " GPU" + str(self.use_gpu)
+
+        return results
 
     def prepare_input(self, sentence):
         idxs = []
@@ -176,26 +201,7 @@ class Experimenter():
             tensor = torch.LongTensor(idxs)
             return autograd.Variable(tensor)
 
-    def saveResults(self, resultStr, corpusPath):
-        results_fn = corpusPath+"-results"
-        with open(results_fn, "a+") as resultsFile:
-            resultsFile.write(resultStr)
-
-    def makeResultsString(self, results):
-        response = ""
-        date = datetime.datetime.now()
-        header = "Experiment: grammatical V.S {} noise\n".format(
-                                                    results["noise-type"])
-        response += header
-        timestr = "realized on {}:".format(str(date))
-        response += timestr
-        for key in results:
-            if key != "noise-type":
-                response += "{}:{}\n".format(key, results[key])
-        return response
-
     # Methods for specific experiments ---------------------------
-
     # Runs Cross-validation for a specific n-gram orders
     # Does data generation, extremely ineficient
     def run_crossv_experiment(self, n):
@@ -227,7 +233,7 @@ class Experimenter():
 
             # Train the Model
             model = self.train_model(train_data)
-            te = seconds_to_hms(time() - t1)
+            te = corpus_tools.econds_to_hms(time() - t1)
             message = '''Training finished in {}.
                 Starting testing...'''.format(te)
             print(message)
@@ -236,7 +242,7 @@ class Experimenter():
             # Test the Model
             fold_results = self.test_model(test_data, model)
             result_list.append(fold_results)
-            te = seconds_to_hms(time() - t1)
+            te = corpus_tools.seconds_to_hms(time() - t1)
             message = "Testing finished in {} seconds".format(te)
             print(message)
             message = "\tAccuracy is {}".format(fold_results['accuracy'])
@@ -295,17 +301,6 @@ class Linguo(nn.Module):
         return hidden_state
 
 
-def seconds_to_hms(secondsin):
-    hours = math.floor(secondsin/3600)
-    remain = secondsin % 3600
-    minutes = math.floor(remain/60)
-    seconds = math.floor(remain % 60)
-    answer = "{h} hours, {m} minutes and {s} seconds".format(h=hours,
-                                                             m=minutes,
-                                                             s=seconds)
-    return answer
-
-
 if __name__ == "__main__":
     try:
         corpus_name = sys.argv[1]
@@ -319,7 +314,7 @@ if __name__ == "__main__":
         else:
             use_gpu = False
         noiseName = sys.argv[8]
-        corpusPath = corpus_tools.getDataPath(corpus_name)
+
     except IndexError:
         print("Arguments missing, please remember to provide the following:")
         print("In order:")
@@ -332,6 +327,6 @@ if __name__ == "__main__":
         print("Use GPU (boolean)")
         print("Noise name(string), (what comes after the base name)")
     else:
-        exp = Experimenter(corpusPath, embed_dim, lstm_dim, hidden_dim,
+        exp = Experimenter(corpus_name, embed_dim, lstm_dim, hidden_dim,
                            epochs, learning_rate, use_gpu)
-        exp.runSingleExperiment()
+        exp.runSingleExperiment(noiseName)
