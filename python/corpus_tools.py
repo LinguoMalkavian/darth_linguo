@@ -8,19 +8,34 @@ import os
 
 def getDataPath(corpusName):
     """Gives the full path prefix for data includes begining of fileName)"""
-
-    dataPath = getDataFolderPath + corpusName
+    dataPath = getDataFolderPath(corpusName) + corpusName
     return dataPath
+
+
+def getModelPrefix(corpusName):
+    """Gives the path to save models including the begining of file name."""
+    modelFolder = getModelDir(corpusName)
+    modelPrefix = modelFolder + "/" + corpusName
+    return modelPrefix
+
+
+def getModelDir(corpusName):
+    """Gives the path to the Models directory"""
+    basePath = "/".join(os.getcwd().split("/")[:-1])
+    modelFolder = basePath + "/Models/" + corpusName
+    if not os.path.isdir(modelFolder):
+        os.mkdir(modelFolder)
+    return modelFolder
 
 
 def getDataFolderPath(corpusName):
     """Gives the path of the data folder"""
     basePath = "/".join(os.getcwd().split("/")[:-1])
-    dataPath = basePath + "/Data/"
+    dataPath = basePath + "/Data/" + corpusName + "/"
     return dataPath
 
 
-def load_raw_grammatical_corpus(input_corpus_filename, minlength=7):
+def load_raw_grammatical_corpus(input_corpus_filename, minlength=7, maxlength=45):
     """Load a corpus of line separated sentences.
 
     input_corpus_filename -- the path to the file with the sentences
@@ -29,6 +44,8 @@ def load_raw_grammatical_corpus(input_corpus_filename, minlength=7):
     in_file = open(input_corpus_path, "r")
     numlines = 0
     inter_excl = 0
+    tooShortCount = 0
+    tooLongCount = 0
     tokenized_sentences = []
     for line in in_file.readlines():
         # Keep only sentences, those have a period at the end
@@ -36,17 +53,28 @@ def load_raw_grammatical_corpus(input_corpus_filename, minlength=7):
             if line.strip()[-1] == ".":
                 tokenized = word_tokenize(line)
                 tokenized.append("<eos>")
-                if len(tokenized) >= minlength:
+                if len(tokenized) >= minlength and len(tokenized) <= maxlength:
                     tokenized_sentences.append(tokenized)
+                else:
+                    if len(tokenized) < minlength:
+                        tooShortCount +=1
+                    else:
+                        tooLongCount +=1
             elif line.strip()[-1] == "?" or line.strip()[-1] == "!":
                 inter_excl += 1
         numlines += 1
     n_sent = len(tokenized_sentences)
-    print('''Full corpus has {} sentences,
-    \t {} were dumped,
-    among which {} interogatives or exclamatives.'''.format(n_sent,
-                                                            numlines-n_sent,
-                                                            inter_excl))
+    print('''Full corpus has {full} sentences,
+    \t {dumped} were dumped,
+    among which {inter} interogatives or exclamatives.
+    {tooL} sentences had more than {max} tokens
+    {tooS} had fewer than {min}'''.format(full=n_sent,
+                                          dumped=numlines-n_sent,
+                                          inter=inter_excl,
+                                          tooL=tooLongCount,
+                                          tooS=tooShortCount,
+                                          max=maxlength,
+                                          min=minlength))
     random.shuffle(tokenized_sentences)
     return tokenized_sentences
 
@@ -56,8 +84,11 @@ def saveErrors(falseNegatives, falsePositives, corpus_name, noiseName):
 
     dataFolder = getDataFolderPath(corpus_name)
     date = datetime.datetime.now()
-    baseName = dataFolder + "errors/" + corpus_name + "VS"
-    baseName += noiseName + "gram-" + str(date)
+    folderName = dataFolder + "errors/"
+    if not os.path.isdir(folderName):
+        os.mkdir(folderName)
+    baseName = (folderName + corpus_name +
+                "-VS" + noiseName + "gram-" + str(date))
     falseNeg_fn = baseName + "-false_negatives"
     falsePos_fn = baseName + "-false_positives"
     save_tokenized_corpus(falseNeg_fn, falseNegatives)
@@ -134,7 +165,20 @@ def labelAndShuffleItems(positiveItems, negativeItems):
     return labeled
 
 
-def saveResults(self, resultStr, corpusPath):
+def getLabeledData(pathGram, pathNoise):
+    """Provides a corpus of labeled instances
+
+    Takes paths for the positive and negative data,
+    loads the files, labels the instances and returns
+    them as a list of pairs (sentence,label)"""
+
+    gram = load_tokenized_corpus(pathGram)
+    noise = load_tokenized_corpus(pathNoise)
+    labeled = labelAndShuffleItems(gram, noise)
+    return labeled
+
+
+def saveResults(resultStr, corpusPath):
     """Appends results to a single result file per corpus"""
 
     results_fn = corpusPath+"-results"
@@ -142,7 +186,7 @@ def saveResults(self, resultStr, corpusPath):
         resultsFile.write(resultStr)
 
 
-def makeResultsString(self, results):
+def makeResultsString(results):
     """Produces string version of results dictionary"""
 
     response = ""
@@ -150,7 +194,7 @@ def makeResultsString(self, results):
     header = "Experiment: grammatical V.S {} noise\n".format(
                                                 results["noise-type"])
     response += header
-    timestr = "realized on {}:".format(str(date))
+    timestr = "\tcarried out on {}:\n".format(str(date))
     response += timestr
     for key in results:
         if key != "noise-type":
