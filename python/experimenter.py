@@ -9,9 +9,11 @@ from tqdm import tqdm
 # other utilities
 from collections import defaultdict
 import math
+from datetime import datetime
 from time import time
 import sys
 import corpus_tools
+import os
 
 
 class Experimenter():
@@ -32,34 +34,34 @@ class Experimenter():
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.use_gpu = use_gpu
-        self.word2id = {}
         self.corpusPath = corpus_tools.getDataPath(corpus_name)
+        self.word2id = corpus_tools.loadWord2Id(self.corpusPath)
 
     def runSingleExperiment(self, noiseName):
-        """Loads """
+        """Runs one experiment, full with training and testing"""
 
         startingTime = time()
         # Load the training corpus
-        self.word2id = corpus_tools.loadWord2Id(self.corpusPath)
+
         gramTrain_fn = self.corpusPath + "-grammatical-train"
         noiseTrain_fn = self.corpusPath + "-" + noiseName + "-train"
-        gramTrain = corpus_tools.load_tokenized_corpus(gramTrain_fn)
-        noiseTrain = corpus_tools.load_tokenized_corpus(noiseTrain_fn)
-        labeledTrain = corpus_tools.labelAndShuffleItems(gramTrain, noiseTrain)
-        random.shuffle(labeledTrain)
+        labeledTrain = corpus_tools.getLabeledData(gramTrain_fn, noiseTrain_fn)
+
         # Train the Model
         model = self.train_model(labeledTrain)
+        self.saveModel(model, noiseName)
         trainDoneT = time()
         training_time = corpus_tools.seconds_to_hms(trainDoneT - startingTime)
+
         # Load test data
         gramTest_fn = self.corpusPath + "-grammatical-test"
         noiseTest_fn = self.corpusPath + "-" + noiseName + "-test"
-        gramTest = corpus_tools.load_tokenized_corpus(gramTest_fn)
-        noiseTest = corpus_tools.load_tokenized_corpus(noiseTest_fn)
-        labeledTest = corpus_tools.labelAndShuffleItems(gramTest, noiseTest)
+        labeledTest = corpus_tools.getLabeledData(gramTest_fn, noiseTest_fn)
+
         # Run test
         results, falseNegs, falsePos = self.test_model(labeledTest, model)
         testing_time = corpus_tools.seconds_to_hms(time()-trainDoneT)
+
         # Print and Save results
         results["noise-type"] = noiseName
         results["Training time"] = training_time
@@ -67,8 +69,9 @@ class Experimenter():
         resultStr = corpus_tools.makeResultsString(results)
         resultStr += self.getParametersString()
         print(resultStr)
-        self.saveResults(resultStr, self.corpusPath)
-        self.saveErrors(falseNegs, falsePos, self.corpus_name, noiseName)
+        corpus_tools.saveResults(resultStr, self.corpusPath)
+        corpus_tools.saveErrors(falseNegs, falsePos,
+                                self.corpus_name, noiseName)
 
     def train_model(self, train_data):
         """Train a new model with the given data"""
@@ -119,8 +122,12 @@ class Experimenter():
             print("\t Epoch{}:{}".format(i, epoch_loss))
         return linguo
 
-    # Testing, testing
+    # Test the model
     def test_model(self, test_data, model):
+        """ Runs a model on a list of labeled data.
+
+        Returns a results dictionary with Accuracy, precision, and recall
+        As well as a list of false positives and one of false negatives"""
         correct = 0.0
         tp = 0.0
         tn = 0.0
@@ -164,6 +171,40 @@ class Experimenter():
                    "fn": fn}
         return results, falseNegs, falsePos
 
+    def classifyInstance(self, model, instance):
+        """Runs a single instance through the network"""
+
+        prepared_inputs = self.prepare_input(instance)
+        prediction_vec = model(prepared_inputs).view(2)
+        if prediction_vec.data[0] > prediction_vec.data[1]:
+            prediction = 0
+        else:
+            prediction = 1
+        return prediction
+
+    def saveModel(self, model, noiseName):
+        """Saves a model to file"""
+        path = corpus_tools.getModelPrefix(self.corpus_name)
+        path += "VS"+noiseName+"_trained_{}".format(datetime.now())
+        torch.save(model, path)
+        print("Model has been saved to {}".format(path))
+
+    def loadModel(self, noiseName=""):
+        """Loads the most recently trained model"""
+        modelDir = corpus_tools.getModelDir(self.corpus_name)
+        availableModelPaths = os.listdir(modelDir)
+        validModelPaths = [path for path in availableModelPaths
+                           if path.find(noiseName) != -1]
+
+        availableModelPaths.sort()
+        if validModelPaths:
+            modelPath = availableModelPaths[-1]
+            model = torch.load(modelDir+"/"+modelPath)
+            return model
+        else:
+            print("There are no trained models with desired noise")
+            return None
+
     def average_results(self, result_list):
         total = len(result_list)
         averaged = defaultdict(float)
@@ -177,13 +218,13 @@ class Experimenter():
     def getParametersString(self):
         """Gives a string with the experimental settings"""
 
-        results = ""
+        results = "\t"
         results += " Embedding:" + str(self.embed_dim)
-        results += " LSTM" + str(self.lstm_dim)
-        results += " Hidden" + str(self.hidden_dim)
-        results += " Epochs" + str(self.epochs)
-        results += " learning_rate" + str(self.learning_rate)
-        results += " GPU" + str(self.use_gpu)
+        results += " LSTM: " + str(self.lstm_dim)
+        results += " Hidden: " + str(self.hidden_dim)
+        results += " Epochs: " + str(self.epochs)
+        results += " learning_rate: " + str(self.learning_rate)
+        results += " GPU: " + str(self.use_gpu) + "\n"
 
         return results
 
@@ -200,67 +241,6 @@ class Experimenter():
         else:
             tensor = torch.LongTensor(idxs)
             return autograd.Variable(tensor)
-
-    # Methods for specific experiments ---------------------------
-    # Runs Cross-validation for a specific n-gram orders
-    # Does data generation, extremely ineficient
-    def run_crossv_experiment(self, n):
-        t2 = time()
-        # Generate the word salads
-        labeled_gramatical = [[sentence, 1] for sentence in self.prepro_gram]
-        labeled_ws = self.generateWSData(n)
-        cutoff = math.floor(self.train_proportion * len(labeled_gramatical))
-        # Iterate over the number of folds
-        result_list = []
-        for fold in range(self.folds):
-            t1 = time()
-            message = "Starting training on fold {} for {}-grams...".format(
-                                                                    fold+1, n)
-            print(message)
-            # Shuffle and split data
-            random.shuffle(labeled_gramatical)
-            random.shuffle(labeled_ws)
-
-            train_g = labeled_gramatical[:cutoff]
-            test_g = labeled_gramatical[cutoff:]
-            train_ws, test_ws = labeled_ws[:cutoff], labeled_ws[cutoff:]
-
-            train_data = train_g + train_ws
-            random.shuffle(train_data)
-
-            test_data = test_g + test_ws
-            random.shuffle(test_data)
-
-            # Train the Model
-            model = self.train_model(train_data)
-            te = corpus_tools.econds_to_hms(time() - t1)
-            message = '''Training finished in {}.
-                Starting testing...'''.format(te)
-            print(message)
-            print("...")
-            t1 = time()
-            # Test the Model
-            fold_results = self.test_model(test_data, model)
-            result_list.append(fold_results)
-            te = corpus_tools.seconds_to_hms(time() - t1)
-            message = "Testing finished in {} seconds".format(te)
-            print(message)
-            message = "\tAccuracy is {}".format(fold_results['accuracy'])
-            print(message)
-
-        order_results = self.average_results(result_list)
-        te2 = time() - t2
-        message = "Results are in for {}-grams".format(n)
-        print(message)
-        message = "\tFinished {} folds in {:.4f} s".format(folds, te2)
-        print(message)
-        message = "\tAverage accuracy is:{}".format(order_results["accuracy"])
-        print(message)
-        message = "\tAverage F measure is:{}".format(order_results["fmeasure"])
-        print(message)
-        order_results["order"] = n
-
-        return order_results
 
 
 class Linguo(nn.Module):
