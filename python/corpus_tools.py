@@ -35,7 +35,9 @@ def getDataFolderPath(corpusName):
     return dataPath
 
 
-def load_raw_grammatical_corpus(input_corpus_filename, minlength=7, maxlength=45):
+def load_raw_grammatical_corpus(input_corpus_filename,
+                                minlength=7,
+                                maxlength=45):
     """Load a corpus of line separated sentences.
 
     input_corpus_filename -- the path to the file with the sentences
@@ -57,9 +59,9 @@ def load_raw_grammatical_corpus(input_corpus_filename, minlength=7, maxlength=45
                     tokenized_sentences.append(tokenized)
                 else:
                     if len(tokenized) < minlength:
-                        tooShortCount +=1
+                        tooShortCount += 1
                     else:
-                        tooLongCount +=1
+                        tooLongCount += 1
             elif line.strip()[-1] == "?" or line.strip()[-1] == "!":
                 inter_excl += 1
         numlines += 1
@@ -211,3 +213,40 @@ def seconds_to_hms(secondsin):
                                                              m=minutes,
                                                              s=seconds)
     return answer
+
+
+def splitCorpus(corpus, splits):
+    """Receives a list of names of splits with the proportion of data,
+    the splits must add to 1 (or less) and be all positive."""
+
+    total = sum(splits.values())
+    if total > 1:
+        raise ValueError("The proportions of the pieces of the corpus must sum to 1 or less")
+
+    response = {}
+    sliceStart = 0
+    sliceEnd = 0
+    for sub_corpus_name in splits:
+        prop = splits[sub_corpus_name]
+        if prop <= 0 or prop >= 1:
+            # if a proportion is invalid raise an exception
+            error_message = """Each proportion must be a positive float less than 1,
+            proportion for {} is {} """.format(sub_corpus_name, prop)
+            raise ValueError(error_message)
+        sliceStart = sliceEnd
+        sliceEnd += math.floor(len(corpus)*prop)
+        response[sub_corpus_name] = corpus[sliceStart:sliceEnd]
+
+    return response
+
+
+def saveCorpora(baseFilename, corpora):
+    for corpus_name in corpora:
+        filePath = baseFilename + "-" + corpus_name
+        with open(filePath, "w") as outfile:
+            for sentence in corpora[corpus_name]:
+                line = " ".join(sentence)+"\n"
+                outfile.write(line)
+        print("{} sentences of {} saved to {}".format(len(corpora[corpus_name]),
+                                                      corpus_name,
+                                                      filePath))
