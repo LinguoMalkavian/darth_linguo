@@ -3,6 +3,7 @@ from nltk import word_tokenize
 import random
 import datetime
 import math
+from tqdm import tqdm
 import os
 
 
@@ -49,7 +50,8 @@ def load_raw_grammatical_corpus(input_corpus_filename,
     tooShortCount = 0
     tooLongCount = 0
     tokenized_sentences = []
-    for line in in_file.readlines():
+    print("Reading and tokenizing raw sentences")
+    for line in tqdm(in_file.readlines()):
         # Keep only sentences, those have a period at the end
         if line.strip() != "":
             if line.strip()[-1] == ".":
@@ -77,7 +79,7 @@ def load_raw_grammatical_corpus(input_corpus_filename,
                                           tooS=tooShortCount,
                                           max=maxlength,
                                           min=minlength))
-    random.shuffle(tokenized_sentences)
+
     return tokenized_sentences
 
 
@@ -221,12 +223,14 @@ def splitCorpus(corpus, splits):
 
     total = sum(splits.values())
     if total > 1:
-        raise ValueError("The proportions of the pieces of the corpus must sum to 1 or less")
+        raise ValueError("The proportions must sum to 1 or less")
 
+    random.shuffle(corpus)
+    print("Splitting corpus")
     response = {}
     sliceStart = 0
     sliceEnd = 0
-    for sub_corpus_name in splits:
+    for sub_corpus_name in tqdm(splits):
         prop = splits[sub_corpus_name]
         if prop <= 0 or prop >= 1:
             # if a proportion is invalid raise an exception
@@ -247,6 +251,6 @@ def saveCorpora(baseFilename, corpora):
             for sentence in corpora[corpus_name]:
                 line = " ".join(sentence)+"\n"
                 outfile.write(line)
-        print("{} sentences of {} saved to {}".format(len(corpora[corpus_name]),
-                                                      corpus_name,
-                                                      filePath))
+        print("{} {} sentences saved to {}".format(len(corpora[corpus_name]),
+                                                   corpus_name,
+                                                   filePath))
