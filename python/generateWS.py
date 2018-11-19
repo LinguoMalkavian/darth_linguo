@@ -58,7 +58,7 @@ def extract_ngram_freq(corpus, order):
     return n_frequencies
 
 
-def generateWordSalad(n_frequencies, order, minlength=7):
+def generateWordSalad(n_frequencies, order, minlength=7, maxlength=45):
     """Generate a single word salad of specified order.
 
     n_frequencies -- a nested dictionary with:
@@ -68,24 +68,20 @@ def generateWordSalad(n_frequencies, order, minlength=7):
     order -- an integer, the order of ngrams being used"""
 
     # The sentence is a list of tokens, start it by padding it with #
-    sentence = ["#"]*(order-1)
+    n_pads = order-1
+    sentence = ["#"]*(n_pads)
     while sentence[-1] != "<eos>":
         prefix = " ".join(sentence[-(order-1):])
         options, freqs = zip(*n_frequencies[prefix].items())
         total = sum(freqs)
         probs = [freq/total for freq in freqs]
         word = choice(options, p=probs)
-        if len(sentence) < minlength and word in [".", "<eos>"]:
-            # Only allow the sentence to end if minimum has been reached
-            if len(options) == 1:
-                # There are no valid continuations, scrape the sentence
-                sentence = ["#"]*(order-1)
-                continue
-            else:
-                while word in [".", "<eos>"]:
-                    word = choice(options, p=probs)
         sentence.append(word)
-    return sentence[order-1:]
+        if ((sentence[-1] == "<eos>" and len(sentence) - n_pads < minlength)
+           or len(sentence) - n_pads >= maxlength):
+            sentence = ["#"]*(n_pads)
+
+    return sentence[n_pads:]
 
 
 def saveWordSaladCorpus(salads, filenamePrefix, tag):
