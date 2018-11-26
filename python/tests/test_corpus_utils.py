@@ -2,18 +2,18 @@ import corpus_tools
 import tempfile
 from allen_linguo import LinguoDatasetReader
 import unittest
+import os
 
 
 class TestCorpusHandling(unittest.TestCase):
 
     def test_corpus_paths(self):
         corpusName = "test"
-        actual_corpusPath = "/Users/pablo/Dropbox/workspace/" + \
-            "darth_linguo/Data/test/test"
+        os.chdir("../../Data/test")
+        actual_data_folder = os.getcwd()
+        actual_corpusPath = actual_data_folder + "/test"
         built_corpusPath = corpus_tools.getDataPath(corpusName)
         self.assertEqual(built_corpusPath, actual_corpusPath)
-        actual_data_folder = "/Users/pablo/Dropbox/workspace/" + \
-            "darth_linguo/Data/test/"
         built_data_folder = corpus_tools.getDataFolderPath(corpusName)
         self.assertEqual(actual_data_folder, built_data_folder)
 
