@@ -99,8 +99,29 @@ def saveErrors(falseNegatives, falsePositives, corpus_name, noiseName):
     save_tokenized_corpus(falsePos_fn, falsePositives)
 
 
+def save_uniform_labeled_corpus(filename,
+                                sentences,
+                                g_label=None,
+                                ug_type=None):
+    """Saves an already tokenized uniform corpus to file with labels"""
+
+    if g_label is not None:
+        if g_label == 1:
+            ug_type = "G"
+        elif ug_type is None:
+            raise ValueError("Ungrammatical sentences must have a type label ")
+        prefix = "{} {} ".format(g_label, ug_type)
+    else:
+        print("Warning: you are saving an unlabeled corpus")
+    with open(filename, "w") as outfile:
+        for tokenList in sentences:
+            sentString = prefix + " ".join(tokenList)+"\n"
+            outfile.write(sentString)
+
+
 def save_tokenized_corpus(filename, sentences):
-    """Saves an already tokenized corpus to file"""
+    """ Saves an already tokenized corpus to file (no labels)"""
+
     with open(filename, "w") as outfile:
         for tokenList in sentences:
             sentString = " ".join(tokenList)+"\n"
@@ -254,3 +275,12 @@ def saveCorpora(baseFilename, corpora):
         print("{} {} sentences saved to {}".format(len(corpora[corpus_name]),
                                                    corpus_name,
                                                    filePath))
+
+
+def labelCorpus(infilename, outfilename, g_label, ug_type=None):
+    """Takes a previously unlabeled, tokenized, uniform corpus and labels it"""
+    if g_label == 1:
+        ug_type == "G"
+    corpus = load_tokenized_corpus(infilename)
+    save_uniform_labeled_corpus(outfilename, corpus,
+                                g_label, ug_type)
