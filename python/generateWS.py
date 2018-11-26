@@ -4,6 +4,7 @@ from tqdm import tqdm
 from collections import defaultdict
 import corpus_tools
 from numpy.random import choice
+import argparse
 
 
 def get_vocabulary(sentences,
@@ -84,42 +85,55 @@ def generateWordSalad(n_frequencies, order, minlength=7, maxlength=45):
     return sentence[n_pads:]
 
 
-def saveWordSaladCorpus(salads, filenamePrefix, tag):
+def saveWordSaladCorpus(salads, filenamePrefix,
+                        order, suffix=""):
     """Store a corpus in a file"""
 
-    filename = filenamePrefix + "-{}-gramWS".format(tag)
-    corpus_tools.save_tokenized_corpus(filename, salads)
-    print("Word salads of order {} saved to:\n {}".format(tag, filename))
+    g_label = 0
+    ug_type = "WS"
+    if suffix != "":
+        suffix = "-" + suffix
+
+    filename = filenamePrefix + "-{}-gramWS".format(order) + suffix
+    corpus_tools.save_uniform_labeled_corpus(filename,
+                                             salads,
+                                             g_label,
+                                             ug_type)
+    print("Word salads of order {} saved to:\n {}".format(order, filename))
 
 
-def generateMultipleOrders(corpusName, orders=[2, 3, 4, 5, 6]):
-    """Run whole pipeline to generate ws of several orders and the mix"""
+def generateMultipleOrders(corpus_fn,
+                           outfile_path,
+                           orders=[2, 3, 4, 5, 6],
+                           numSalads=None,
+                           corpType="train"):
+    """Load a tokenized corpus, train LMS and  generate ws
+     of stated orders as well as a  the mix"""
 
-    basePath = "/".join(os.getcwd().split("/")[:-1])
-    dataPath = basePath + "/Data/" + corpusName + "/" + corpusName
-    corpus_fn = dataPath + "-pretrain"
 
     # Load file with grammatical data.
-    tokenized_sents = corpus_tools.load_raw_grammatical_corpus(corpus_fn)
+    tokenized_sents = corpus_tools.load_tokenized_corpus(corpus_fn)
 
-    # Extract and save vocabulary.
-    word2id = get_vocabulary(tokenized_sents, 2)
-    corpus_tools.saveWord2Id(word2id, dataPath)
+    if numSalads is None:
+        numSalads = len(tokenized_sents)
 
-    preprocessed_sentences = corpus_tools.token_replacement(tokenized_sents,
-                                                            word2id)
-    numSalads = len(preprocessed_sentences)
     allWordSalads = {}
     allWordSalads["mix"] = []
     for order in orders:
         # Get n gram frequencies for chosen n
-        n_gramFreqs = extract_ngram_freq(preprocessed_sentences, order)
+        n_gramFreqs = extract_ngram_freq(tokenized_sents, order)
         allWordSalads[order] = generateSingleOrder(n_gramFreqs,
                                                    order, numSalads)
         allWordSalads["mix"] += allWordSalads[order][:numSalads//len(orders)]
-        saveWordSaladCorpus(allWordSalads[order], dataPath, order)
+        saveWordSaladCorpus(allWordSalads[order],
+                            outfile_path,
+                            order,
+                            suffix=corpType)
     # Generate also a mix
-    saveWordSaladCorpus(allWordSalads["mix"], dataPath, "mix")
+    saveWordSaladCorpus(allWordSalads["mix"],
+                        outfile_path,
+                        "mix",
+                        suffix=corpType)
 
     return allWordSalads
 
@@ -139,8 +153,40 @@ def generateSingleOrder(frequencies, order, quantity):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Please provide a corpus name")
+
+    desc = "Generate Word salads based on a training corpus for the LM"
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('in_file', type=str,
+                        help="The name of the file to extract the frequencies")
+    parser.add_argument('--named_corpus',
+                        help="If file is in the data folder name of corpus")
+    parser.add_argument("--outfile", default=None,
+                        help="""If specified saves WS with this prefix""")
+    parser.add_argument("--numsalads", "-n", type=int,
+                        help="N of WS, by def same as sentences in input")
+    parser.add_argument("--orders", nargs='*', default=[2, 3, 4, 5, 6],
+                        type=int,
+                        help="Orders of WS to be generated")
+    parser.add_argument("--mix", action='store_true',
+                        help="Whether to produced the mixed WS file")
+    parser.add_argument("--suf", default="train",
+                        help="The suffix for the files (e.g. train, val)")
+
+    args = parser.parse_args()
+
+    if args.named_corpus:
+        filename = corpus_tools.getDataFolderPath(args.named_corpus)\
+            + args.in_file
     else:
-        corpusName = sys.argv[1]
-        all_WS = generateMultipleOrders(corpusName)
+        filename = args.in_file
+
+    if args.outfile is not None:
+        outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
+    else:
+        outfilePrefix = filename
+
+    generateMultipleOrders(filename,
+                           outfilePrefix,
+                           orders=args.orders,
+                           numSalads=args.numsalads,
+                           corpType=args.suf)
