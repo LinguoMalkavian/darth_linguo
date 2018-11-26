@@ -3,13 +3,17 @@ import tempfile
 from allen_linguo import LinguoDatasetReader
 import unittest
 import os
+<<<<<<< HEAD
 import warnings
+=======
+>>>>>>> 5d9c3ab53c4cde4983c682faf5fcb434c127d33a
 
 
 class TestCorpusHandling(unittest.TestCase):
 
     def test_corpus_paths(self):
         corpusName = "test"
+<<<<<<< HEAD
         originalWD = os.getcwd()
         os.chdir("../Data/test")
 
@@ -17,6 +21,11 @@ class TestCorpusHandling(unittest.TestCase):
         actual_corpusPath = actual_data_folder + "test"
 
         os.chdir(originalWD)
+=======
+        os.chdir("../../Data/test")
+        actual_data_folder = os.getcwd()
+        actual_corpusPath = actual_data_folder + "/test"
+>>>>>>> 5d9c3ab53c4cde4983c682faf5fcb434c127d33a
         built_corpusPath = corpus_tools.getDataPath(corpusName)
         self.assertEqual(built_corpusPath, actual_corpusPath)
         built_data_folder = corpus_tools.getDataFolderPath(corpusName)
