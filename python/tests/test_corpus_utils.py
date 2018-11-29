@@ -3,7 +3,6 @@ import tempfile
 from allen_linguo import LinguoDatasetReader
 import unittest
 import os
-import warnings
 
 
 class TestCorpusHandling(unittest.TestCase):
@@ -110,6 +109,54 @@ class TestCorpusHandling(unittest.TestCase):
                 plain_loaded = [str(token) for
                                 token in loaded_sent.fields["sentence"].tokens]
                 self.assertEqual(plain_loaded, original_sent)
+
+    def test_argument_parser(self):
+        parser = corpus_tools.get_corpus_tools_argparser()
+        # Test the split_corpus action
+        # Test the functionality with all the positional arguments
+        full_split = "split_corpus test_file --named_corpus test_corp " + \
+            "--piece_names piece1 piece2 --piece_ratio 0.6 0.4 --tokenized" + \
+            " --min_len 5 --max_len 100 --outfile out_test"
+        args = parser.parse_args(full_split.split())
+        self.assertEqual("test_file", args.in_file)
+        self.assertEqual("test_corp", args.named_corpus)
+        self.assertEqual(["piece1", "piece2"], args.piece_names)
+        self.assertEqual([0.6, 0.4], args.piece_ratio)
+        self.assertEqual(True, args.tokenized)
+        self.assertEqual(5, args.min_len)
+        self.assertEqual(100, args.max_len)
+        self.assertEqual("out_test", args.outfile)
+        self.assertEqual(corpus_tools.handle_splitCorpus, args.func)
+
+        # Test with only the mandatory arguments
+        nameonly_split = "split_corpus path/to/test/file"
+        args = parser.parse_args(nameonly_split.split())
+        self.assertEqual("path/to/test/file", args.in_file)
+        self.assertEqual(None, args.named_corpus)
+        self.assertEqual(["LM1", "LM2", "GT", "GV"], args.piece_names)
+        self.assertEqual([0.25, 0.25, 0.4, 0.1], args.piece_ratio)
+        self.assertEqual(7, args.min_len)
+        self.assertEqual(45, args.max_len)
+        self.assertEqual(None, args.outfile)
+        self.assertEqual(corpus_tools.handle_splitCorpus, args.func)
+
+        # ------- Test corpus labeling action
+        full_label = "label_corpus test_file 0 --named_corpus test_corp" + \
+            " --ungramType WS --outfile out_test"
+        args = parser.parse_args(full_label.split())
+        self.assertEqual("test_file", args.in_file)
+        self.assertEqual("test_corp", args.named_corpus)
+        self.assertEqual(0, args.gram_label)
+        self.assertEqual("out_test", args.outfile)
+        self.assertEqual("WS", args.ungramType)
+
+        short_label = "label_corpus path/to/corpus 1"
+        args = parser.parse_args(short_label.split())
+        self.assertEqual("path/to/corpus", args.in_file)
+        self.assertEqual(None, args.named_corpus)
+        self.assertEqual(1, args.gram_label)
+        self.assertEqual(None, args.outfile)
+        self.assertEqual("G", args.ungramType)
 
 
 if __name__ == '__main__':

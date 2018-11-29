@@ -5,6 +5,8 @@ import datetime
 import math
 from tqdm import tqdm
 import os
+import argparse
+from allen_linguo import LinguoDatasetReader
 
 
 def getDataPath(corpusName):
@@ -266,6 +268,10 @@ def splitCorpus(corpus, splits):
 
 
 def saveCorpora(baseFilename, corpora):
+    """Saves several tokenized corpora to file
+
+    Takes a base file path and name and a dictionary of corpora
+    {name:[[tokens]]}, saves each ocrpus to the base_path+name"""
     for corpus_name in corpora:
         filePath = baseFilename + "-" + corpus_name
         with open(filePath, "w") as outfile:
@@ -284,3 +290,97 @@ def labelCorpus(infilename, outfilename, g_label, ug_type=None):
     corpus = load_tokenized_corpus(infilename)
     save_uniform_labeled_corpus(outfilename, corpus,
                                 g_label, ug_type)
+
+
+def get_corpus_tools_argparser():
+    desc = "Generate Word salads based on a training corpus for the LM"
+    parser = argparse.ArgumentParser(description=desc)
+    subparsers = parser.add_subparsers()
+
+    # create the parser for the "split_corpus" command
+    parser_split = subparsers.add_parser('split_corpus')
+    infile_help = "The name of the origin file containing the full corpus." + \
+        "It can be a full path if no corpus name is provided or" +\
+        "just the name of the file within the corpus folder  "
+    parser_split.add_argument('in_file', type=str,
+                              help=infile_help)
+    parser_split.add_argument("--outfile", default=None,
+                              help="""If specified saves with this prefix""")
+    parser_split.add_argument('--named_corpus',
+                              help="If file in the data folder name of corpus")
+    parser_split.add_argument("--piece_names", nargs='*',
+                              default=["LM1", "LM2", "GT", "GV"],
+                              type=str,
+                              help="Names for the splits")
+    parser_split.add_argument("--piece_ratio", nargs='*',
+                              default=[0.25, 0.25, 0.4, 0.1],
+                              type=float,
+                              help="Ratios for each piece, 0<r<1 summing to 1")
+    parser_split.add_argument("--tokenized", action='store_true',
+                              help="If the data has been previously tokenized")
+    parser_split.add_argument("--min_len", type=int, default=7)
+    parser_split.add_argument("--max_len", type=int, default=45)
+    parser_split.set_defaults(func=handle_splitCorpus)
+
+    # create the parser for the "label_corpus" command
+    parser_label = subparsers.add_parser('label_corpus')
+    parser_label.add_argument('in_file', type=str,
+                              help=infile_help)
+    parser_label.add_argument('gram_label', type=int, choices=[0, 1],
+                              help="1 for grammatical, 0 for ungrammatical")
+    parser_label.add_argument("--outfile", default=None,
+                              help="""If specified saves with this prefix""")
+    parser_label.add_argument('--named_corpus',
+                              help="If file in the data folder name of corpus")
+    parser_label.add_argument('--ungramType', type=str, default="G",
+                              choices=LinguoDatasetReader.UG_TYPE_labels)
+    parser_label.set_defaults(func=handle_labelCorpus)
+
+    return parser
+
+
+def handle_splitCorpus(args):
+    if args.named_corpus:
+        filename = getDataFolderPath(args.named_corpus)\
+            + args.in_file
+    else:
+        filename = args.in_file
+    if args.outfile is not None:
+        outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
+    else:
+        outfilePrefix = filename
+
+    if args.tokenized:
+        tokenized_sentences = load_tokenized_corpus(filename)
+    else:
+        tokenized_sentences = load_raw_grammatical_corpus(filename,
+                                                          args.min_len)
+
+    splits = {name: ratio
+              for name, ratio in zip(args.piece_names, args.piece_ratio)}
+    corpora = splitCorpus(tokenized_sentences, splits)
+
+    saveCorpora(outfilePrefix, corpora)
+
+
+def handle_labelCorpus(args):
+    if args.named_corpus:
+        filename = getDataFolderPath(args.named_corpus)\
+            + args.in_file
+    else:
+        filename = args.in_file
+    if args.outfile is not None:
+        outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
+    else:
+        outfilePrefix = filename+"labeled"
+
+    glabel = args.gram_label
+    ug_type = args.ungramType
+    labelCorpus(filename, outfilePrefix, glabel, ug_type)
+
+
+if __name__ == "__main__":
+    parser = get_corpus_tools_argparser()
+
+    parser.parse_args()
+    parser.func(args)
