@@ -240,7 +240,7 @@ def seconds_to_hms(secondsin):
     return answer
 
 
-def splitCorpus(corpus, splits):
+def splitCorpus(corpus, splits, shuffle=True):
     """Receives a list of names of splits with the proportion of data,
     the splits must add to 1 (or less) and be all positive."""
 
@@ -248,7 +248,9 @@ def splitCorpus(corpus, splits):
     if total > 1:
         raise ValueError("The proportions must sum to 1 or less")
 
-    random.shuffle(corpus)
+    if shuffle:
+        random.shuffle(corpus)
+
     print("Splitting corpus")
     response = {}
     sliceStart = 0
@@ -320,6 +322,7 @@ def get_corpus_tools_argparser():
                               help="If the data has been previously tokenized")
     parser_split.add_argument("--min_len", type=int, default=7)
     parser_split.add_argument("--max_len", type=int, default=45)
+    parser_split.add_argument("--noshuffle", action='store_true')
     parser_split.set_defaults(func=handle_splitCorpus)
 
     # create the parser for the "label_corpus" command
@@ -354,11 +357,14 @@ def handle_splitCorpus(args):
         tokenized_sentences = load_tokenized_corpus(filename)
     else:
         tokenized_sentences = load_raw_grammatical_corpus(filename,
-                                                          args.min_len)
+                                                          args.min_len,
+                                                          args.max_len)
 
     splits = {name: ratio
               for name, ratio in zip(args.piece_names, args.piece_ratio)}
-    corpora = splitCorpus(tokenized_sentences, splits)
+    shuffle = not args.noshuffle
+
+    corpora = splitCorpus(tokenized_sentences, splits, shuffle=shuffle)
 
     saveCorpora(outfilePrefix, corpora)
 
@@ -372,7 +378,7 @@ def handle_labelCorpus(args):
     if args.outfile is not None:
         outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
     else:
-        outfilePrefix = filename+"labeled"
+        outfilePrefix = filename + "-labeled"
 
     glabel = args.gram_label
     ug_type = args.ungramType
@@ -382,5 +388,5 @@ def handle_labelCorpus(args):
 if __name__ == "__main__":
     parser = get_corpus_tools_argparser()
 
-    parser.parse_args()
-    parser.func(args)
+    args = parser.parse_args()
+    args.func(args)
