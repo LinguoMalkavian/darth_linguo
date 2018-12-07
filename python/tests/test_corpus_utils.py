@@ -158,6 +158,27 @@ class TestCorpusHandling(unittest.TestCase):
         self.assertEqual(None, args.outfile)
         self.assertEqual("G", args.ungramType)
 
+    def test_corpus_splitting(self):
+
+        filename = "tests/data/small_sample.txt"
+        tokenized = corpus_tools.load_raw_grammatical_corpus(filename)
+        splits = {"first": 0.25, "second": 0.25, "third": 0.5}
+        corpora = corpus_tools.splitCorpus(tokenized, splits)
+        self.assertEqual(len(corpora["first"]), 25)
+        self.assertEqual(len(corpora["second"]), 25)
+        self.assertEqual(len(corpora["third"]), 50)
+        unshuffled = True
+        for sentence in tokenized[:25]:
+            if sentence not in corpora["first"]:
+                unshuffled = False
+        for sentence in tokenized[25:50]:
+            if sentence not in corpora["first"]:
+                unshuffled = False
+        for sentence in tokenized[50:]:
+            if sentence not in corpora["first"]:
+                unshuffled = False
+        self.assertFalse(unshuffled)
+
 
 if __name__ == '__main__':
     unittest.main()
