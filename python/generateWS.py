@@ -1,5 +1,3 @@
-import sys
-import os
 from tqdm import tqdm
 from collections import defaultdict
 import corpus_tools
@@ -109,7 +107,6 @@ def generateMultipleOrders(corpus_fn,
                            corpType="train"):
     """Load a tokenized corpus, train LMS and  generate ws
      of stated orders as well as a  the mix"""
-
 
     # Load file with grammatical data.
     tokenized_sents = corpus_tools.load_tokenized_corpus(corpus_fn)
