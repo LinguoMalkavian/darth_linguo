@@ -1,4 +1,7 @@
 
 
-python generateWS.py toy_ws-LM1 --numsalads 141 --named_corpus toy_ws --suf train
-python generateWS.py toy_ws-LM2 --numsalads 35 --named_corpus toy_ws --suf val
+python corpus_tools.py  split_corpus new_hundo-base --named_corpus new_hundo --piece_names  --outfile new_hundo
+
+python
+python generateWS.py full_ws-LM1 --numsalads 605524 --named_corpus full_ws --suf train
+python generateWS.py full_ws-LM2 --numsalads 151381 --named_corpus full_ws --suf val

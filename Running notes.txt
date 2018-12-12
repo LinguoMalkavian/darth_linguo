@@ -1,9 +1,9 @@
 How to run experiments
 
 Word Salad experiments
-To generate data for all orders, make sure the folder /Data/<corpus-name> exists and place the retrain corpus in a file named "/Data/<corpus-name>/<corpus-name>-pretrain" then run 
+To generate data for all orders, make sure the folder /Data/<corpus-name> exists and place the retrain corpus in a file named "/Data/<corpus-name>/<corpus-name>-pretrain" then run
 
-python generateWS.py <corpus-name> 
+python generateWS.py <corpus-name>
 
 *To divide the data into train and test:
 
@@ -11,7 +11,7 @@ python generateWS.py <corpus-name>
 
 python splitCorpus.py <filepath> <isRaw> <split-into three> <proportion for training> <proportion for training(percentage)>
 
-The proportion for training is optional and only used if split-into-three (train dev val) is true, in this case the first number is the proportion for training, the next one is development and the remaining is validation 
+The proportion for training is optional and only used if split-into-three (train dev val) is true, in this case the first number is the proportion for training, the next one is development and the remaining is validation
 
 -For a corpus file that has not been tokenized (one sentence per line)
 
@@ -31,4 +31,8 @@ python experimenter.py <corpus-name> <Embeddings> <LSTM> <Hidden> <epochs> <lear
 python experimenter.py euro_hundo 32 32 32 5 0.1 false 4-gramWS
 
 
+TO setup environment:
 
+conda install setuptools
+conda install -c conda-forge spacy
+pip install allennlp
