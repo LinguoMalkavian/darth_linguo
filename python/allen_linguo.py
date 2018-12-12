@@ -24,7 +24,7 @@ torch.manual_seed(1)
 
 
 class LinguoDatasetReader(DatasetReader):
-    """Dataset reader for preprocessed sentences (tokens separated by spaces) """
+    """Dataset reader for preprocessed sentences """
     GRAMMATICALITY_labels = ["ungrammatical", "grammatical"]
     UG_TYPE_labels = ["WS", "VA", "AA", "RV", "G"]
 
@@ -32,18 +32,26 @@ class LinguoDatasetReader(DatasetReader):
         super().__init__(lazy=False)
         self.token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
 
-    def text_to_instance(self, tokens:List[Token], glabel:int=None, ugType:str=None ):
-        sentence_field = TextField(tokens,self.token_indexers)
-        fields = {"sentence":sentence_field}
+    def text_to_instance(self,
+                         tokens: List[Token],
+                         glabel: int=None,
+                         ugType: str=None):
+        sentence_field = TextField(tokens, self.token_indexers)
+        fields = {"sentence": sentence_field}
         if glabel:
-            glabel_field = LabelField(label=glabel,label_namespace = "grammaticality_labels")
+            glabel_field = LabelField(label=glabel,
+                                      label_namespace="grammaticality_labels")
             fields["g_label"] = glabel_field
         if ugType:
-            ugType_field = LabelField(label=ugType, label_namespace = "ugtype_labels")
+            ugType_field = LabelField(label=ugType,
+                                      label_namespace="ugtype_labels")
             fields["ug_type"] = ugType_field
         return Instance(fields)
 
-    def _read(self, file_path:str, label:str=None, ugType:str=None) -> Iterator[Instance]:
+    def _read(self,
+              file_path: str,
+              label: str=None,
+              ugType: str=None) -> Iterator[Instance]:
         with open(file_path) as infile:
             for line in infile:
                 elements = line.strip().split()
@@ -52,9 +60,11 @@ class LinguoDatasetReader(DatasetReader):
                     ugType = elements[1]
                 else:
                     ugType = "G"
-                sentence = elements [2:]
+                sentence = elements[2:]
                 yield self.text_to_instance([Token(word) for word in sentence],label,ugType)
 
+
+@Model.register("linguo")
 class AllenLinguo(Model):
 
     def __init__(self,word_embeddings : TextFieldEmbedder,
