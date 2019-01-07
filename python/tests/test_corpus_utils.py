@@ -1,9 +1,9 @@
+import unittest
+import os
+print(os.getcwd())
 import corpus_tools
 import tempfile
 from allen_linguo import LinguoDatasetReader
-import unittest
-import os
-
 
 class TestCorpusHandling(unittest.TestCase):
 

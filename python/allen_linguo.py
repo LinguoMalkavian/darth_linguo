@@ -22,7 +22,7 @@ from allennlp.predictors import SentenceTaggerPredictor
 
 torch.manual_seed(1)
 
-
+@DatasetReader.register("linguo_reader")
 class LinguoDatasetReader(DatasetReader):
     """Dataset reader for preprocessed sentences """
     GRAMMATICALITY_labels = ["ungrammatical", "grammatical"]
