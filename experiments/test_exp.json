@@ -1,0 +1,41 @@
+{
+    "dataset_reader": {
+      "type": "linguo_reader",
+      "token_indexers": {
+        "tokens": {
+          "type": "single_id",
+          "lowercase_tokens": true
+        }
+      }
+    },
+    "train_data_path": "/home/lab/Pablo/darth_linguo/Data/toy_ws/toy_ws-GvsMixgram-train",
+    "validation_data_path": "/home/lab/Pablo/darth_linguo/Data/toy_ws/toy_ws-GvsMixgram-val",
+    "model": {
+      "type": "linguo",
+      "word_embeddings": {
+        "token_embedders": {
+          "tokens": {
+              "type": "embedding",
+              "embedding_dim": 32
+          }
+        }
+      },
+      "encoder": {
+        "type": "lstm",
+        "input_size": 32,
+        "hidden_size": 32,
+        "num_layers": 1
+      }
+    },
+    "iterator": {
+      "type": "basic",
+      "batch_size": 10
+    },
+    "trainer": {
+      "optimizer": "adam",
+      "num_epochs": 50,
+      "patience": 10,
+      "cuda_device": 0
+    }
+  }
+  
