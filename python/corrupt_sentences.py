@@ -80,11 +80,16 @@ def main():
 
 
 def sentence_generator(in_file, nlp_mod):
-    nextline = in_file.readline()
+    """"Lazyly reads sentences and pases them through the processing pipeline.
+
+    in_file: the file object with a sentence per line
+    nlp_mod: a loaded spacy nlp module
+    """
+    nextline = "start"
     while nextline:
+        nextline = in_file.readline()
         sentence_obj = nlp_mod(nextline)
         yield sentence_obj
-        nextline = in_file.readline()
 
 
 main()
