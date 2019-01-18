@@ -1,0 +1,41 @@
+{
+    "dataset_reader": {
+      "type": "linguo_reader",
+      "token_indexers": {
+        "tokens": {
+          "type": "single_id",
+          "lowercase_tokens": true
+        }
+      }
+    },
+    "train_data_path": "/home/lab/Pablo/darth_linguo/Data/full_ws/full_g_vs_4gramws-train",
+    "validation_data_path": "/home/lab/Pablo/darth_linguo/Data/full_ws/full_g_vs_4gramws-val",
+    "model": {
+      "type": "linguo",
+      "word_embeddings": {
+        "token_embedders": {
+          "tokens": {
+              "type": "embedding",
+              "embedding_dim": 32
+          }
+        }
+      },
+      "encoder": {
+        "type": "lstm",
+        "input_size": 32,
+        "hidden_size": 32,
+        "num_layers": 1
+      }
+    },
+    "iterator": {
+      "type": "basic",
+      "batch_size": 25
+    },
+    "trainer": {
+      "optimizer": "adam",
+      "num_epochs": 25,
+      "patience": 10,
+      "cuda_device": 0
+    }
+  }
+  

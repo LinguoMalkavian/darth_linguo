@@ -5,6 +5,7 @@ import corpus_tools
 import tempfile
 from allen_linguo import LinguoDatasetReader
 
+
 class TestCorpusHandling(unittest.TestCase):
 
     def test_corpus_paths(self):
