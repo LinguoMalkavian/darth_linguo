@@ -6,6 +6,7 @@ import math
 from tqdm import tqdm
 import os
 import argparse
+import sys
 from allen_linguo import LinguoDatasetReader
 
 
@@ -43,8 +44,21 @@ def load_raw_grammatical_corpus(input_corpus_filename,
                                 maxlength=45):
     """Load a corpus of line separated sentences.
 
-    input_corpus_filename -- the path to the file with the sentences
-    minlength -- the minimum length of sentences to be kept (in tokens)"""
+    Parameters
+    ----------
+    input_corpus_filename : string
+        the path to the file with the sentences
+        (sentences in file must be newline separated)
+    minlength : int
+        the minimum length of sentences to be kept (in tokens)
+    maxlength : int
+        the maximum length of sentences to be kept (in tokens)
+
+    Returns
+    -------
+    tokenized_sentences : [[str]]
+        a list of tokens for each line in the input file
+    """
     input_corpus_path = input_corpus_filename
     in_file = open(input_corpus_path, "r")
     numlines = 0
@@ -351,7 +365,7 @@ def handle_splitCorpus(args):
     if args.outfile is not None:
         outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
     else:
-        outfilePrefix = filename
+        outfilePrefix = "-".join(filename.split("-")[:-1])
 
     if args.tokenized:
         tokenized_sentences = load_tokenized_corpus(filename)
@@ -378,11 +392,24 @@ def handle_labelCorpus(args):
     if args.outfile is not None:
         outfilePrefix = "/".join(filename.split("/")[:-1]) + "/" + args.outfile
     else:
-        outfilePrefix = filename + "-labeled"
+        outfilePrefix = "-".join(filename.split("-")[:-1]) + "-labeled"
 
     glabel = args.gram_label
     ug_type = args.ungramType
     labelCorpus(filename, outfilePrefix, glabel, ug_type)
+
+
+def sentence_generator(in_file, nlp_mod):
+    """"Lazyly reads sentences and pases them through the processing pipeline.
+
+    in_file: the file object with a sentence per line
+    nlp_mod: a loaded spacy nlp module
+    """
+    nextline = "start"
+    while nextline:
+        nextline = in_file.readline()
+        sentence_obj = nlp_mod(nextline)
+        yield sentence_obj
 
 
 if __name__ == "__main__":
