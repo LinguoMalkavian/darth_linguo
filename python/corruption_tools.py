@@ -1,35 +1,24 @@
-from spacy import symbols
 import re
 from collections import defaultdict
 import random
 
-# Load the dictionary
-lemma_list = []
-lemma_file = open("lemario_snowball.txt", "r")
-for line in lemma_file.readlines():
-    lemma_list.append(line.strip())
-# Load the inflected verb form list
-verb_list = []
-verb_file = open("verbos-espanol-conjugaciones.txt")
-for line in verb_file.readlines():
-    verb_list.append(line.strip())
-
-# Constants to keep tags organized
-pos_adj = "ADJ"
-pos_verb = "VERB"
-pos_prep = "Prep"
-dep_root = "ROOT"
-mood_indicative = "Ind"
-tense_present = "Pres"
-tense_imperfect = "Imp"
-tense_past = "Past"
-finite_verb = "Fin"
 
 
 class corruptor ():
-    def __init__(self, kind):
+    # Constants to keep tags organized
+    POS_ADJ = "ADJ"
+    POS_VERB = "VERB"
+    POS_PREP = "Prep"
+    DEP_ROOT = "ROOT"
+    MOOD_INDICATIVE = "Ind"
+    TENSE_PRESENT = "Pres"
+    TENSE_IMPERFECT = "Imp"
+    TENSE_PAST = "Past"
+    FINITE_VERB = "Fin"
+
+    def __init__(self, kind, nlp_module):
         self.kind = kind
-        pass
+        self.nlp_module = nlp_module
 
     def test_possible(self, sentence):
         pass
@@ -37,21 +26,29 @@ class corruptor ():
     def transform(self, sentence):
         pass
 
+    def is_word(self, word_text):
+        """Check if a word form is in the vocabulary.
+        """
+        word_id = self.nlp_module.vocab.strings(word_text)
+        if word_id in self.nlp_module.vocab:
+            return True
+        return False
 # Subject Remover
 
 
 class PrepRemover(corruptor):
+
     def test_possible(self, sentence):
         for token in sentence:
             token_features = extract_token_features(token)
-            if token_features["AdpType"] == pos_prep:
+            if token_features["AdpType"] == self.POS_PREP:
                 return True
         return False
 
     def transform(self, sentence):
         for token in sentence:
             token_features = extract_token_features(token)
-            if token_features["AdpType"] == pos_prep:
+            if token_features["AdpType"] == self.POS_PREP:
                 prepo = token.text
                 prepo_reg = re.compile("( ?)"+prepo)
                 newtext = prepo_reg.sub("", sentence.text)
@@ -85,9 +82,9 @@ class VerbRemover(corruptor):
         return -1
 
     def is_main_conjugated_verb(self, token, features):
-        if token.dep_ == dep_root \
-          and features["POS"] == pos_verb \
-          and features["VerbForm"] == finite_verb:
+        if token.dep_ == self.DEP_ROOT \
+          and features["POS"] == self.POS_VERB \
+          and features["VerbForm"] == self.FINITE_VERB:
             return True
         return False
 
@@ -118,7 +115,7 @@ class VerbInflCorruptor(corruptor):
     def test_possible(self, sentence):
         for token in sentence:
             features = extract_token_features(token)
-            if features["POS"] == pos_verb and features["VerbForm"] == 'Fin':
+            if features["POS"] == self.POS_VERB and features["VerbForm"] == 'Fin':
                 return True
         return False
 
@@ -129,61 +126,61 @@ class VerbInflCorruptor(corruptor):
         for token in sentence:
             # Assemble the appropriate replacements
             # Verb is in present indicative
-            pos_inf = []
+            possible_infl = []
             token_info = extract_token_features(token)
             infl = ""
-            if token_info["Mood"] == mood_indicative \
-                    and token_info["Tense"] == tense_present:
-                pos_inf = ["o", "es", "és", "ás", "e", "emos", "éis", "en",
+            if token_info["Mood"] == self.MOOD_INDICATIVE \
+                    and token_info["Tense"] == self.TENSE_PRESENT:
+                possible_infl = ["o", "es", "és", "ás", "e", "emos", "éis", "en",
                            "as", "a", "amos", "áis", "an", "imos", "ís"]
                 v_match = VerbInflCorruptor.verb_pr_ind_regex.match(token.text)
                 if v_match:
                     root = v_match.group(1)
                     infl = v_match.group(2)
                     if infl[0] == "a" or infl[0] == "á":
-                        for i in pos_inf:
+                        for i in possible_infl:
                             if i[0] != "a" and i[0] != "o" and i[0] != "á":
-                                pos_inf.remove(i)
+                                possible_infl.remove(i)
                     else:
-                        for inf in pos_inf:
+                        for inf in possible_infl:
                             if inf[0] == "a" or inf[0] == "á":
-                                pos_inf.remove(inf)
+                                possible_infl.remove(inf)
             # Verb is in imperfect indicative
-            elif token_info["Mood"] == mood_indicative\
-                    and token_info["Tense"] == tense_imperfect:
+            elif token_info["Mood"] == self.MOOD_INDICATIVE \
+                    and token_info["Tense"] == self.TENSE_IMPERFECT:
                 v_match = VerbInflCorruptor.verb_imp_ind_regex.match(
                                                                    token.text)
                 if v_match:
                     root = v_match.group(1)
                     infl = v_match.group(2)
                     mid = v_match.group(3)
-                    pos_inf = [mid, mid + "s", mid + "mos",
+                    possible_infl = [mid, mid + "s", mid + "mos",
                                mid+"is", mid + "n"]
             # Verb is in past simple
             # elif token.pos == VerbInflCorruptor.perf_ind_tag:
             # modify when there are more kinds of verbs
             else:
-                pos_inf = ["é", "aste", "ó", "amos", "asteis", "aron", "í",
+                possible_infl = ["é", "aste", "ó", "amos", "asteis", "aron", "í",
                            "iste", "ió", "imos", "isteis", "ieron"]
                 v_match = VerbInflCorruptor.verb_ps_ind_regex.match(token.text)
                 if v_match:
                     root = v_match.group(1)
                     infl = v_match.group(2)
                     if infl[0] == "a" or infl[0] == "á":
-                        for i in pos_inf:
+                        for i in possible_infl:
                             if i[0] != "a" and i[0] != "é" and i[0] != "á":
-                                pos_inf.remove(i)
+                                possible_infl.remove(i)
                     else:
-                        for inf in pos_inf:
+                        for inf in possible_infl:
                             if inf[0] == "a" or inf[0] == "é":
-                                pos_inf.remove(inf)
+                                possible_infl.remove(inf)
 
-            if infl in pos_inf:
-                pos_inf.remove(infl)
+            if infl in possible_infl:
+                possible_infl.remove(infl)
             if v_match:
-                for new_inf in pos_inf:
+                for new_inf in possible_infl:
                     new_verb = root + new_inf
-                    if new_verb in verb_list:
+                    if self.is_word(new_verb):
                         rep = [new_verb, token.text]
                         possib.append(rep)
         if len(possib) != 0:
@@ -202,7 +199,7 @@ class AdjInflCorruptor(corruptor):
     def test_possible(self, sentence):
         for token in sentence:
             features = extract_token_features(token)
-            if features["POS"] == pos_adj:
+            if features["POS"] == self.POS_ADJ:
                 if AdjInflCorruptor.inf_ADJ_regex.match(token.text):
                     return True
         return False
@@ -212,17 +209,17 @@ class AdjInflCorruptor(corruptor):
         possib = []
         for token in sentence:
             features = extract_token_features(token)
-            if features["POS"] == pos_adj:
+            if features["POS"] == self.POS_ADJ:
                 match = AdjInflCorruptor.inf_ADJ_regex.match(token.text)
                 if match:
                     root = match.group(1)
                     infl = match.group(2)
-                    pos_inf = ["a", "o", "as", "os", "es"]
-                    pos_inf.remove(infl)
-                    random.shuffle(pos_inf)
-                    for new_inf in pos_inf:
+                    possible_infl = ["a", "o", "as", "os", "es"]
+                    possible_infl.remove(infl)
+                    random.shuffle(possible_infl)
+                    for new_inf in possible_infl:
                         new_word = root + new_inf
-                        if new_word in lemma_list:
+                        if self.is_word(new_word):
                             rep = [new_word, token.text]
                             possib.append(rep)
         if len(possib) != 0:
