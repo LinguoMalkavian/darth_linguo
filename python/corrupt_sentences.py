@@ -1,95 +1,72 @@
 import spacy
-import transformer
-import sys
+import corpus_tools
+import corruption_tools
+import os
+from tqdm import tqdm
 
+nlp_med = spacy.load('es_core_news_md')
 
-def main():
-    # Load the model
-    print("Loading Spacy Spanish model")
-    nlp_mod = spacy.load('es_core_news_sm')
-    print("Model loaded")
-    # Initialize the array of corruptors
-    corruptortypes = ["prepRM", "verbRM", "verbInfl", "adjInfl"]
-    corruptors = {}
-    corruptors["prepRM"] = transformer.PrepRemover("prepRM")
-    corruptors["verbRM"] = transformer.VerbRemover("verbRM")
-    corruptors["verbInfl"] = transformer.VerbInflCorruptor("verbInfl")
-    corruptors["adjInfl"] = transformer.AdjInflCorruptor("adjInfl")
-    # Initialize counters for corrupted sentences
-    corruptCount = {}
-    uncorrupted_count = 0
-    for typ in corruptortypes:
-        corruptCount[typ] = 0
+# Initialize the array of corruptors
+corruptortypes = ["verbRM", "verbInfl", "adjInfl"]
+corruptors = {}
+corruptors["verbRM"] = corruption_tools.VerbRemover("verbRM", nlp_med)
+corruptors["verbInfl"] = corruption_tools.VerbInflCorruptor("verbInfl", nlp_med)
+corruptors["adjInfl"] = corruption_tools.AdjInflCorruptor("adjInfl", nlp_med)
+# Initialize counters for corrupted sentences
+corruptCount = {}
+uncorrupted_count = 0
+for typ in corruptortypes:
+    corruptCount[typ] = 0
 
-    # Load sentence generator
-    in_corpus_filename = sys.argv[1]
-    out_corpus_folder = in_corpus_filename + "."
-    in_corpus_file = open(in_corpus_filename, "r")
-    sentence_gen = sentence_generator(in_corpus_file, nlp_mod)
+# Load sentence generator
+in_corpus_filename = sys.argv[1]
+#in_corpus_filename = os.path.abspath("../data/exp1_mini/exp1_mini-CT")
+out_corpus_folder = in_corpus_filename + "_"
+in_corpus_file = open(in_corpus_filename, "r")
+sentence_gen = corpus_tools.sentence_generator(in_corpus_file, nlp_med)
 
-    # Create outfiles for each type of corrupted sentence
-    outfiles = {}
-    for kind in corruptortypes:
-        outname = out_corpus_folder + "corrupted_by." + kind
-        outfiles[kind] = open(outname, "w")
+# Create outfiles for each type of corrupted sentence
+outfiles = {}
+for kind in corruptortypes:
+    outname = out_corpus_folder + "corrupted-by_" + kind
+    outfiles[kind] = open(outname, "w")
 
-    processed_count = 0
-    # Iterate parsed sentences and test for coruptibility
-    print("Begining Corruption")
-    for parsed_sentence in sentence_gen:
-        posib_trans = []
-        # Test for each corruptor
-        for corr in corruptortypes:
-            possibility = corruptors[corr].test_possible(parsed_sentence)
-            if possibility:
-                posib_trans.append(corr)
+processed_count = 0
+# Iterate parsed sentences and test for coruptibility
+print("Begining Corruption")
+for parsed_sentence in tqdm(sentence_gen):
 
-        # Choose corruptor that has the fewest sentences so far
-        select = None
-        selectCount = float("inf")
-        for possib in posib_trans:
-            if corruptCount[possib] < selectCount:
-                select = possib
-                selectCount = corruptCount[possib]
+    # Test for each corruptor, store the possible transformations
+    possib_trans = {}
+    for cor_type in corruptortypes:
+        target = corruptors[cor_type].test_possible(parsed_sentence)
+        if target is not None:
+            possib_trans[cor_type] = target
 
-        if select:
-            # Corrupt sentence
-            corruptedVersion = corruptors[select].transform(parsed_sentence)
-            if corruptedVersion != -1:
-                # Save corrupted sentence to corresponding file
-                outfiles[select].write(corruptedVersion)
-                corruptCount[select] += 1
-            else:
-                uncorrupted_count += 1
-        else:
-            uncorrupted_count += 1
-        processed_count += 1
-        # Progress checker, for sanity
-        if processed_count % 500 == 0:
-            print("{} sentences processed".format(processed_count))
-    # Close files
-    for kind in outfiles:
-        outfiles[kind].close()
-    # Print summary to console
-    total = 0
-    for trans_type in corruptCount:
-        print(trans_type + ":" + str(corruptCount[trans_type]))
-        total += corruptCount[trans_type]
-    print("Total: {0}".format(total))
-    print("Incorruptible: {0}".format(uncorrupted_count))
+    success = False
+    while possib_trans and not success:
+        # Choose the valid corruption with the fewest sentences
+        kind, target = corruption_tools.select_corruption(possib_trans,
+                                                          corruptCount)
+        # Corrupt sentence
+        corruptedVersion = corruptors[kind].transform(parsed_sentence, target)
+        if corruptedVersion is not None:
+            # Save corrupted sentence to corresponding file
+            outfiles[kind].write(corruptedVersion + " <eos>\n")
+            corruptCount[kind] += 1
+            # Finish the while loop
+            success = True
+    if not success:
+        uncorrupted_count += 1
+    processed_count += 1
 
-
-def sentence_generator(in_file, nlp_mod):
-    """"Lazyly reads sentences and pases them through the processing pipeline.
-
-    in_file: the file object with a sentence per line
-    nlp_mod: a loaded spacy nlp module
-    """
-    nextline = "start"
-    while nextline:
-        nextline = in_file.readline()
-        sentence_obj = nlp_mod(nextline)
-        yield sentence_obj
-
-
-main()
+# Close files
+for kind in outfiles:
+    outfiles[kind].close()
+# Print summary to console
+total = 0
+for trans_type in corruptCount:
+    print(trans_type + ":" + str(corruptCount[trans_type]))
+    total += corruptCount[trans_type]
+print("Total: {0}".format(total))
+print("Incorruptible: {0}".format(uncorrupted_count))
