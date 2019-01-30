@@ -2,8 +2,10 @@ import spacy
 import corpus_tools
 import corruption_tools
 import os
+import sys
 from tqdm import tqdm
 
+print("Loading language models")
 nlp_med = spacy.load('es_core_news_md')
 
 # Initialize the array of corruptors
