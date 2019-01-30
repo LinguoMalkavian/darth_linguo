@@ -7,6 +7,7 @@ from allen_linguo import LinguoDatasetReader
 import corpus_tools
 
 
+
 class TestCorpusHandling(unittest.TestCase):
 
     def test_corpus_paths(self):
