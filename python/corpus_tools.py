@@ -408,7 +408,8 @@ def sentence_generator(in_file, nlp_mod):
     nextline = "start"
     while nextline:
         nextline = in_file.readline()
-        sentence_obj = nlp_mod(nextline)
+        sentence = " ".join(nextline.strip().split(" ")[:-1])
+        sentence_obj = nlp_mod(sentence)
         yield sentence_obj
 
 
