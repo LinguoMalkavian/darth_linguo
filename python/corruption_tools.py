@@ -75,7 +75,7 @@ class VerbRemover(corruptor):
         token = sentence[index]
         main_verb = token.text
         main_verb_reg = re.compile("( ?)"+main_verb)
-        newtext = main_verb_reg.sub("", sentence.text)
+        newtext = main_verb_reg.sub("", sentence.text).strip()
         newtext = newtext[0].capitalize() + newtext[1:]
         return newtext
 

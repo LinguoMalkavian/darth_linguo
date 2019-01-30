@@ -29,7 +29,7 @@ python corpus_tools.py label_corpus $corpusname-CT_corrupted-by_verbInfl 0 \
 python corpus_tools.py label_corpus $corpusname-CT_corrupted-by_adjInfl 0 \
     --named_corpus $corpusname --ungramType AA --outfile $corpusname-CTAA-label
 
-python corpus_tools.py label_corpus $copusname-GT 1 \
+python corpus_tools.py label_corpus $corpusname-GT 1 \
     --outfile $corpusname-GT-label --named_corpus $corpusname
 
 # label the testing (validation) files
@@ -72,4 +72,4 @@ head -n $quarter $corpusname-LM-mix-gramWS-train | cat - $corpusname-CTRV-label 
 # build the test file
 
 cat  $corpusname-CVRV-label $corpusname-CVVA-label $corpusname-CVAA-label \
-    $corpusname-GV-label  > $corpusname-fullws-train
+    $corpusname-GV-label  > $corpusname-validation
