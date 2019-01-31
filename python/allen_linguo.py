@@ -78,6 +78,10 @@ class AllenLinguo(Model):
                                               out_features=vocab.get_vocab_size("grammaticality_labels"))
         self.loss_function = nn.CrossEntropyLoss()
         self.accuracy = CategoricalAccuracy()
+        self.vocab = vocab
+        self.specificAccuracies = {}
+        for ind in range(vocab.get_vocab_size(namespace="ugtype_labels")):
+            self.specificAccuracies[ind] = CategoricalAccuracy()
 
     def forward(self,
                sentence: Dict[str, torch.Tensor],
@@ -95,11 +99,33 @@ class AllenLinguo(Model):
         output = {"tag_logits": tag_logits}
 
         if g_label is not None:
+            # Update general accuracy and compute loss
             self.accuracy(tag_logits, g_label)
-            #print(tag_logits)
             output["loss"] = self.loss_function(tag_logits, g_label)
+            # update specific accuracies
+            n_ugtypes = self.vocab.get_vocab_size(namespace="ugtype_labels")
+            specific_gold = {n: [] for n in range(n_ugtypes)}
+            specific_pred = {n: [] for n in range(n_ugtypes)}
+            for ind in range(len(g_label)):
+                g_lab = g_label[ind].item()
+                logit = [tag_logits[ind][0].item(), tag_logits[ind][1].item()]
+                spec_label = ug_type[ind].item()
+                specific_gold[spec_label].append(g_lab)
+                specific_pred[spec_label].append(logit)
+            for ind in self.specificAccuracies:
+                if specific_pred[ind]:
+                    preds = torch.tensor(specific_pred[ind])
+                    labels = torch.tensor(specific_gold[ind])
+                    self.specificAccuracies[ind](preds, labels)
 
         return output
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        return {"accuracy": self.accuracy.get_metric(reset)}
+        metrics = {"accuracy": self.accuracy.get_metric(reset)}
+        #print(len(self.specificAccuracies))
+        for ind in self.specificAccuracies:
+            name = self.vocab.get_token_from_index(ind, namespace="ugtype_labels")
+            name += "_accuracy"
+            metrics[name] = self.specificAccuracies[ind].get_metric(reset)
+        #print(metrics)
+        return metrics

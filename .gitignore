@@ -6,3 +6,5 @@ Corpora/
 !Data/
 Data/*
 !Data/test
+results/
+!results/consolidated
