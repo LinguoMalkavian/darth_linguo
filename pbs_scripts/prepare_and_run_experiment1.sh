@@ -2,7 +2,7 @@
 
 # Running example
 # -on mbp bash prepare_experiment1.sh exp1 /Users/pablo/Dropbox/workspace/darth_linguo
-# -on lab bash prepare_experiment1.sh exp1 /home/lab/Pablo/darth_linguo
+# -on lab bash prepare_experiment1.sh exp1 /home/lab/Pablo/darth_linguo 
 
 set -x
 source activate allennlp
@@ -75,3 +75,21 @@ head -n $quarter $corpusname-LM-mix-gramWS-train | cat - $corpusname-CTRV-label 
 
 cat  $corpusname-CVRV-label $corpusname-CVVA-label $corpusname-CVAA-label \
     $corpusname-GV-label  > $corpusname-validation
+
+#Run the experiments
+
+allennlp train /home/lab/Pablo/darth_linguo/experiments/exp_1_all-WS_350-1000.json \
+    -s /home/lab/Pablo/darth_linguo/results/exp_1_all-WS_350-1000_lab \
+    --include-package allen_linguo
+
+allennlp train /home/lab/Pablo/darth_linguo/experiments/exp_1_half-WS_350-1000.json \
+    -s /home/lab/Pablo/darth_linguo/results/exp_1_half-WS_350-1000_lab \
+    --include-package allen_linguo
+
+allennlp train /home/lab/Pablo/darth_linguo/experiments/exp_1_quarter-WS_350-1000.json \
+    -s /home/lab/Pablo/darth_linguo/results/exp_1_quarter-WS_350-1000_lab \
+    --include-package allen_linguo
+
+allennlp train /home/lab/Pablo/darth_linguo/experiments/exp_1_no-WS_350-1000.json \
+    -s /home/lab/Pablo/darth_linguo/results/exp_1_no-WS_350-1000_lab \
+    --include-package allen_linguo
