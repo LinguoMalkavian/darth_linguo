@@ -18,8 +18,12 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.data.iterators import BucketIterator
 from allennlp.training.trainer import Trainer
+<<<<<<< HEAD
 from allennlp.predictors import Predictor
 from allennlp.common.util import JsonDict, sanitize
+=======
+from allennlp.predictors import SentenceTaggerPredictor
+>>>>>>> e9ded0d684e84953dcc510df2eb4f3498e03b9a6
 
 torch.manual_seed(1)
 
