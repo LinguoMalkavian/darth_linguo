@@ -18,7 +18,8 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.data.iterators import BucketIterator
 from allennlp.training.trainer import Trainer
-from allennlp.predictors import SentenceTaggerPredictor
+from allennlp.predictors import Predictor
+from allennlp.common.util import JsonDict, sanitize
 
 torch.manual_seed(1)
 
@@ -129,3 +130,19 @@ class AllenLinguo(Model):
             metrics[name] = self.specificAccuracies[ind].get_metric(reset)
         #print(metrics)
         return metrics
+
+@Predictor.register('linguo-predictor')
+class GrammaticalityJudge(Predictor):
+    def __init__(self, model:Model, dataset_reader: DatasetReader) -> None:
+        super().__init__(model, dataset_reader)
+    
+    def predict_instance(self, instance: Instance) -> JsonDict:
+
+        outputs = self._model.forward_on_instance(instance)
+        sanitized = sanitize(outputs)
+        sanitized["sentence"] = " ".join([ str(token) 
+            for token in instance["sentence"].tokens])
+        sanitized["ug_type"] = instance["ug_type"].label
+        sanitized["predicted_label"]
+        print("I got {}".format(str(sanitized)))
+        return sanitized 
