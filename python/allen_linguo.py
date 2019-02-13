@@ -18,12 +18,8 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.data.iterators import BucketIterator
 from allennlp.training.trainer import Trainer
-<<<<<<< HEAD
 from allennlp.predictors import Predictor
 from allennlp.common.util import JsonDict, sanitize
-=======
-from allennlp.predictors import SentenceTaggerPredictor
->>>>>>> e9ded0d684e84953dcc510df2eb4f3498e03b9a6
 
 torch.manual_seed(1)
 
@@ -119,8 +115,8 @@ class AllenLinguo(Model):
                 specific_pred[spec_label].append(logit)
             for ind in self.specificAccuracies:
                 if specific_pred[ind]:
-                    preds = torch.tensor(specific_pred[ind])
-                    labels = torch.tensor(specific_gold[ind])
+                    preds = torch.Tensor(specific_pred[ind])
+                    labels = torch.Tensor(specific_gold[ind])
                     self.specificAccuracies[ind](preds, labels)
 
         return output
@@ -147,6 +143,10 @@ class GrammaticalityJudge(Predictor):
         sanitized["sentence"] = " ".join([ str(token) 
             for token in instance["sentence"].tokens])
         sanitized["ug_type"] = instance["ug_type"].label
-        sanitized["predicted_label"]
-        print("I got {}".format(str(sanitized)))
+        sanitized["gold_label"] = instance["g_label"].label
+        if sanitized["tag_logits"][0] > sanitized["tag_logits"][1]:
+            sanitized["predicted_label"] = "ungrammatical"
+        else:
+            sanitized["predicted_label"] = "grammatical"
+        
         return sanitized 

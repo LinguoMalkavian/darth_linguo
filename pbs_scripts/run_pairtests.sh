@@ -1,4 +1,5 @@
 #!/bin/bash -x
+# Runs with the name of the experiment (the folder with the model ) as single argument
 
 set -x 
 source activate allennlp

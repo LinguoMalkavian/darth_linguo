@@ -1,0 +1,24 @@
+
+allennlp predict /home/lab/Pablo/darth_linguo/results/exp-2.1_1uni-1-layer/model.tar.gz \
+/home/lab/Pablo/darth_linguo/Data/exp3-pairtest/exp3-pairtest_AA \
+--include-package allen_linguo \
+--cuda-device 0 \
+--weights-file /home/lab/Pablo/darth_linguo/results/exp-2.1_1uni-1-layer/best.th \
+--output-file /home/lab/Pablo/darth_linguo/results/pairtest/exp-2.1_1uni-1-layer_AA_results \
+--use-dataset-reader --predictor predictor
+
+allennlp predict /home/lab/Pablo/darth_linguo/results/exp-2.1_1uni-1-layer/model.tar.gz \
+/home/lab/Pablo/darth_linguo/Data/pairtest-mini/pairtest-mini_AA \
+--include-package allen_linguo \
+--cuda-device 0 \
+--weights-file /home/lab/Pablo/darth_linguo/results/exp-2.1_1uni-1-layer/best.th \
+--output-file /home/lab/Pablo/darth_linguo/results/mini-pairtest/exp-2.1_1uni-1-layer_AA_results \
+--use-dataset-reader --predictor linguo-predictor
+
+git filter-branch --force --index-filter \
+'git rm --cached --ignore-unmatch resources/SBW-vectors-300-min5.txt' \
+--prune-empty --tag-name-filter cat -- --all
+
+echo "resources/SBW-vectors-300-min5.txt" >> .gitignore
+git add .gitignore
+git commit -m "Got rid of the embeddings file .gitignore"
