@@ -137,7 +137,6 @@ class GrammaticalityJudge(Predictor):
         super().__init__(model, dataset_reader)
     
     def predict_instance(self, instance: Instance) -> JsonDict:
-
         outputs = self._model.forward_on_instance(instance)
         sanitized = sanitize(outputs)
         sanitized["sentence"] = " ".join([ str(token) 
@@ -145,8 +144,8 @@ class GrammaticalityJudge(Predictor):
         sanitized["ug_type"] = instance["ug_type"].label
         sanitized["gold_label"] = instance["g_label"].label
         if sanitized["tag_logits"][0] > sanitized["tag_logits"][1]:
-            sanitized["predicted_label"] = "ungrammatical"
-        else:
             sanitized["predicted_label"] = "grammatical"
+        else:
+            sanitized["predicted_label"] = "ungrammatical"
         
         return sanitized 
