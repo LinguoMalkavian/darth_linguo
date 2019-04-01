@@ -24,8 +24,7 @@
             "type": "lstm",
             "input_size": 64,
             "hidden_size": 64,
-            "num_layers": 2,
-            "bidirectional": true
+            "num_layers": 2
         }
     },
     "iterator": {
