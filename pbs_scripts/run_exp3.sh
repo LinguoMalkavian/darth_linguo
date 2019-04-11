@@ -6,6 +6,6 @@ experiments=(exp-3_uni-1-layer_32-32 exp-3_uni-2-layer_32-32 exp-3_uni-3-layer_3
 
 for exp_name in "${experiments[@]}"; 
 do
-    allennlp train /home/lab/Pablo/darth_linguo/experiments/$exp_name.json -s /home/lab/Pablo/darth_linguo/results/$exp_name --include-package allen_linguo
-    bash /home/lab/Pablo/darth_linguo/pbs_scripts/generate_predictions.sh $exp_name
+    allennlp train /home/lab/home/lab/Pablo/darth_linguo/experiments/$exp_name.json -s /home/lab/home/lab/Pablo/darth_linguo/results/$exp_name --include-package allen_linguo
+    bash /home/lab/home/lab/Pablo/darth_linguo/pbs_scripts/generate_predictions.sh $exp_name
 done
