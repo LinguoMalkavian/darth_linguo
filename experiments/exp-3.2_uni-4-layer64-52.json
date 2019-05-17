@@ -25,7 +25,7 @@
             "input_size": 64,
             "hidden_size": 52,
             "num_layers": 4,
-            "bidirectional": true
+            "bidirectional": false
         }
     },
     "iterator": {
