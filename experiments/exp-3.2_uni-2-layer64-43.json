@@ -23,9 +23,9 @@
         "encoder": {
             "type": "lstm",
             "input_size": 64,
-            "hidden_size": 61,
+            "hidden_size": 43,
             "num_layers": 2,
-            "bidirectional": true
+            "bidirectional": false
         }
     },
     "iterator": {

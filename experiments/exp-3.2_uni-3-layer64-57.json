@@ -23,8 +23,8 @@
         "encoder": {
             "type": "lstm",
             "input_size": 64,
-            "hidden_size": 61,
-            "num_layers": 2,
+            "hidden_size": 57,
+            "num_layers": 3,
             "bidirectional": true
         }
     },
