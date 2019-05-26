@@ -1,0 +1,41 @@
+{
+    "dataset_reader": {
+        "type": "linguo_reader",
+        "token_indexers": {
+            "tokens": {
+                "type": "single_id",
+                "lowercase_tokens": true
+            }
+        }
+    },
+    "train_data_path": "/Users/pablo/Dropbox/workspace/darth_linguo/Data/exp1/exp1-nows-train-trial",
+    "validation_data_path": "/Users/pablo/Dropbox/workspace/darth_linguo/Data/exp1/exp1-validation-trial",
+    "model": {
+        "type": "linguo",
+        "word_embeddings": {
+            "token_embedders": {
+                "tokens": {
+                    "type": "embedding",
+                    "embedding_dim": 16
+                }
+            }
+        },
+        "encoder": {
+            "type": "lstm",
+            "input_size": 16,
+            "hidden_size": 9,
+            "num_layers": 1,
+            "bidirectional": false
+        }
+    },
+    "iterator": {
+        "type": "basic",
+        "batch_size": 100
+    },
+    "trainer": {
+        "optimizer": "adam",
+        "num_epochs": 3,
+        "patience": 2,
+        "cuda_device": -1
+    }
+}
