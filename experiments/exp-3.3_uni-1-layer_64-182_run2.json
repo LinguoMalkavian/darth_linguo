@@ -1,7 +1,7 @@
 {
-    "random_seed" : 3414,
-    "numpy_seed": 1337,
-    "pytorch_seed": 4385,
+    "random_seed" : 123445,
+    "numpy_seed": 52346,
+    "pytorch_seed": 843345,
     "dataset_reader": {
         "type": "linguo_reader",
         "token_indexers": {
