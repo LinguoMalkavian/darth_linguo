@@ -1,7 +1,4 @@
 {
-    "random_seed" : 123445,
-    "numpy_seed": 52346,
-    "pytorch_seed": 843345,
     "dataset_reader": {
         "type": "linguo_reader",
         "token_indexers": {
@@ -26,9 +23,9 @@
         "encoder": {
             "type": "lstm",
             "input_size": 64,
-            "hidden_size": 182,
-            "num_layers": 1,
-            "bidirectional": false
+            "hidden_size": 52,
+            "num_layers": 3,
+            "bidirectional": true
         }
     },
     "iterator": {
@@ -40,5 +37,8 @@
         "num_epochs": 10,
         "patience": 3,
         "cuda_device": 0
-    }
+    },
+    "random_seed": 99465,
+    "numpy_seed": 767,
+    "pytorch_seed": 88798
 }
