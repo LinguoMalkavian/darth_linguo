@@ -1,0 +1,44 @@
+{
+    "dataset_reader": {
+        "type": "linguo_reader",
+        "token_indexers": {
+            "tokens": {
+                "type": "single_id",
+                "lowercase_tokens": true
+            }
+        }
+    },
+    "train_data_path": "/home/lab/home/lab/Pablo/darth_linguo/Data/exp1/exp1-nows-train",
+    "validation_data_path": "/home/lab/home/lab/Pablo/darth_linguo/Data/exp1/exp1-validation",
+    "model": {
+        "type": "linguo",
+        "word_embeddings": {
+            "token_embedders": {
+                "tokens": {
+                    "type": "embedding",
+                    "embedding_dim": 64
+                }
+            }
+        },
+        "encoder": {
+            "type": "lstm",
+            "input_size": 64,
+            "hidden_size": 67,
+            "num_layers": 2,
+            "bidirectional": true
+        }
+    },
+    "iterator": {
+        "type": "basic",
+        "batch_size": 50
+    },
+    "trainer": {
+        "optimizer": "adam",
+        "num_epochs": 10,
+        "patience": 3,
+        "cuda_device": 0
+    },
+    "random_seed": 99435,
+    "numpy_seed": 73462,
+    "pytorch_seed": 54057
+}
